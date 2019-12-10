@@ -8,16 +8,17 @@ const StartServerPlugin = require('start-server-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const safePostCssParser = require('postcss-safe-parser')
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
-const paths = require('./paths')
-const runPlugin = require('./runPlugin')
-const getClientEnv = require('./env').getClientEnv
-const nodePath = require('./env').nodePath
+const WebpackBar = require('webpackbar')
+const eslint = require('eslint')
+
 const errorOverlayMiddleware = require('react-dev-utils/errorOverlayMiddleware')
 const evalSourceMapMiddleware = require('react-dev-utils/evalSourceMapMiddleware')
 const ForkTsCheckerWebpackPlugin = require('react-dev-utils/ForkTsCheckerWebpackPlugin')
 const typescriptFormatter = require('react-dev-utils/typescriptFormatter')
-const WebpackBar = require('webpackbar')
-const eslint = require('eslint')
+
+const paths = require('./paths')
+const runPlugin = require('./runPlugin')
+const { getClientEnv, nodePath } = require('./env')
 
 // Check if TypeScript is setup
 const useTypeScript = fs.existsSync(paths.appTsConfig)
@@ -315,6 +316,7 @@ module.exports = (
         },
       ],
     },
+    performance: false,
   }
 
   if (IS_NODE) {
@@ -588,8 +590,7 @@ module.exports = (
             parallel: true,
             // Enable file caching
             cache: true,
-            // @todo add flag for sourcemaps
-            sourceMap: true,
+            sourceMap: false,
           }),
           new OptimizeCSSAssetsPlugin({
             cssProcessorOptions: {
