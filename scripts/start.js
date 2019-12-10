@@ -10,7 +10,6 @@ process.on('unhandledRejection', err => {
 })
 
 const chalk = require('react-dev-utils/chalk')
-
 const openBrowser = require('react-dev-utils/openBrowser')
 const clearConsole = require('react-dev-utils/clearConsole')
 const setPorts = require('razzle-dev-utils/setPorts')
@@ -90,7 +89,6 @@ setPorts()
       // Otherwise, create a new watcher for our server code.
       watching = serverCompiler.watch(
         {
-          noInfo: true,
           quiet: false,
           stats: 'none',
         },

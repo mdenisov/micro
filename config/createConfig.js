@@ -14,6 +14,8 @@ const getClientEnv = require('./env').getClientEnv
 const nodePath = require('./env').nodePath
 const errorOverlayMiddleware = require('react-dev-utils/errorOverlayMiddleware')
 const evalSourceMapMiddleware = require('react-dev-utils/evalSourceMapMiddleware')
+const ForkTsCheckerWebpackPlugin = require('react-dev-utils/ForkTsCheckerWebpackPlugin')
+const typescriptFormatter = require('react-dev-utils/typescriptFormatter')
 const WebpackBar = require('webpackbar')
 const eslint = require('eslint')
 
@@ -78,6 +80,7 @@ module.exports = (
   const IS_WEB = target === 'web'
   const IS_PROD = env === 'prod'
   const IS_DEV = env === 'dev'
+
   process.env.NODE_ENV = IS_PROD ? 'production' : 'development'
 
   const dotenv = getClientEnv(target, { clearConsole, host, port })
@@ -157,7 +160,6 @@ module.exports = (
                   // }
                 })(),
                 useEslintrc: false,
-                // @remove-on-eject-end
               },
               loader: require.resolve('eslint-loader'),
             },
@@ -253,7 +255,6 @@ module.exports = (
                   options: {
                     importLoaders: 1,
                     modules: false,
-                    minimize: true,
                   },
                 },
                 {
@@ -303,7 +304,6 @@ module.exports = (
                   options: {
                     modules: true,
                     importLoaders: 1,
-                    // minimize: true,
                     localIdentName: '[path]__[name]___[local]',
                   },
                 },
@@ -367,13 +367,6 @@ module.exports = (
 
       const nodeArgs = ['-r', 'source-map-support/register']
 
-      // Passthrough --inspect and --inspect-brk flags (with optional [host:port] value) to node
-      if (process.env.INSPECT_BRK) {
-        nodeArgs.push(process.env.INSPECT_BRK)
-      } else if (process.env.INSPECT) {
-        nodeArgs.push(process.env.INSPECT)
-      }
-
       config.plugins = [
         ...config.plugins,
         // Add hot module replacement
@@ -397,13 +390,24 @@ module.exports = (
         path: paths.appBuild,
         filename: 'assets.json',
       }),
-      // Maybe we should move to this???
-      // new ManifestPlugin({
-      //   path: paths.appBuild,
-      //   writeToFileEmit: true,
-      //   filename: 'manifest.json',
-      // }),
-    ]
+      // TypeScript type checking
+      useTypeScript &&
+      new ForkTsCheckerWebpackPlugin({
+        typescript: require.resolve('typescript'),
+        async: IS_DEV,
+        useTypescriptIncrementalApi: true,
+        checkSyntacticErrors: true,
+        tsconfig: paths.appTsConfig,
+        reportFiles: [
+          '**',
+          '!**/__tests__/**',
+          '!**/?(*.)(spec|test).*',
+        ],
+        silent: true,
+        // The formatter is invoked directly in WebpackDevServerUtils during development
+        formatter: IS_PROD ? typescriptFormatter : undefined,
+      }),
+    ].filter(Boolean)
 
     if (IS_DEV) {
       // Setup Webpack Dev Server on port 3001 and
@@ -421,7 +425,7 @@ module.exports = (
         publicPath: clientPublicPath,
         pathinfo: true,
         libraryTarget: 'var',
-        filename: 'static/js/bundle.js',
+        filename: 'static/js/[name].js',
         chunkFilename: 'static/js/[name].chunk.js',
         devtoolModuleFilenameTemplate: info =>
           path.resolve(info.resourcePath).replace(/\\/g, '/'),
@@ -478,7 +482,7 @@ module.exports = (
     } else {
       // Specify production entry point (/client/index.js)
       config.entry = {
-        client: paths.appClientIndexJs,
+        bundle: paths.appClientIndexJs,
       }
 
       // Specify the client output directory and paths. Notice that we have
@@ -487,9 +491,11 @@ module.exports = (
       config.output = {
         path: paths.appBuildPublic,
         publicPath: dotenv.raw.PUBLIC_PATH || '/',
-        filename: 'static/js/bundle.[chunkhash:8].js',
-        chunkFilename: 'static/js/[name].[chunkhash:8].chunk.js',
+        filename: 'static/js/[name].[chunkhash:8].js',
+        chunkFilename: 'static/js/[name].[chunkhash:8].js',
+        jsonpFunction: 'wsp',
         libraryTarget: 'var',
+        strictModuleExceptionHandling: true,
       }
 
       config.plugins = [
@@ -498,22 +504,22 @@ module.exports = (
         new webpack.DefinePlugin(dotenv.stringified),
         // Extract our CSS into a files.
         new MiniCssExtractPlugin({
-          filename: 'static/css/bundle.[contenthash:8].css',
-          chunkFilename: 'static/css/[name].[contenthash:8].chunk.css',
+          filename: 'static/css/[name].[contenthash:8].css',
+          chunkFilename: 'static/css/[name].[contenthash:8].css',
           // allChunks: true because we want all css to be included in the main
           // css bundle when doing code splitting to avoid FOUC:
           // https://github.com/facebook/create-react-app/issues/2415
           allChunks: true,
         }),
         new webpack.HashedModuleIdsPlugin(),
-        new webpack.optimize.AggressiveMergingPlugin(),
+        // new webpack.optimize.AggressiveMergingPlugin(),
       ]
 
       config.optimization = {
         removeAvailableModules: true,
         noEmitOnErrors: true,
         checkWasmTypes: false,
-        nodeEnv: false,
+        // nodeEnv: false,
         moduleIds: 'hashed',
         usedExports: true,
 
@@ -588,7 +594,6 @@ module.exports = (
           new OptimizeCSSAssetsPlugin({
             cssProcessorOptions: {
               parser: safePostCssParser,
-              // @todo add flag for sourcemaps
               map: {
                 // `inline: false` forces the sourcemap to be output into a
                 // separate file

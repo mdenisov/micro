@@ -1,6 +1,6 @@
 import http from 'http'
 
-let app = require('./server').default
+import app from './server'
 
 const server = http.createServer(app)
 
@@ -22,8 +22,10 @@ if (module.hot) {
 
     try {
       app = require('./server').default
+
       server.removeListener('request', currentApp)
       server.on('request', app)
+
       currentApp = app
     } catch (error) {
       console.error(error)

@@ -1,6 +1,7 @@
 #! /usr/bin/env node
 'use strict'
 // Do this as the first thing so that any code reading it knows the right env.
+process.env.BABEL_ENV = 'production'
 process.env.NODE_ENV = 'production'
 
 // Makes the script crash on unhandled rejections instead of silently
@@ -13,15 +14,17 @@ process.on('unhandledRejection', err => {
 // Ensure environment variables are read.
 require('../config/env')
 
+const chalk = require('react-dev-utils/chalk')
+const clearConsole = require('react-dev-utils/clearConsole')
+const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
+const FileSizeReporter = require('react-dev-utils/FileSizeReporter')
+
 const webpack = require('webpack')
 const fs = require('fs-extra')
-const chalk = require('react-dev-utils/chalk')
+
 const paths = require('../config/paths')
-const createConfig = require('../config/createConfig')
-const printErrors = require('razzle-dev-utils/printErrors')
-const logger = require('razzle-dev-utils/logger')
-const FileSizeReporter = require('react-dev-utils/FileSizeReporter')
-const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
+const configFactory = require('../config/createConfig')
+
 const measureFileSizesBeforeBuild = FileSizeReporter.measureFileSizesBeforeBuild
 const printFileSizesAfterBuild = FileSizeReporter.printFileSizesAfterBuild
 
@@ -73,27 +76,23 @@ function build(previousFileSizes) {
   let razzle = {}
   try {
     razzle = require(paths.appRazzleConfig)
-    /* eslint-disable no-empty */
-  } catch (e) {
-  }
-  /* eslint-enable */
+  } catch (e) {}
 
-  if (razzle.clearConsole === false || !!razzle.host || !!razzle.port) {
-    logger.warn(`Specifying options \`port\`, \`host\`, and \`clearConsole\` in razzle.config.js has been deprecated. 
-Please use a .env file instead.
-${razzle.host !== 'localhost' && `HOST=${razzle.host}`}
-${razzle.port !== '3000' && `PORT=${razzle.port}`}
-`)
-  }
+  clearConsole()
 
   // Create our production webpack configurations and pass in razzle options.
-  let clientConfig = createConfig('web', 'prod', razzle, webpack)
-  let serverConfig = createConfig('node', 'prod', razzle, webpack)
+  const clientConfig = configFactory('web', 'prod', razzle, webpack)
+  const serverConfig = configFactory('node', 'prod', razzle, webpack)
 
   process.noDeprecation = true // turns off that loadQuery clutter.
 
-  console.log('Creating an optimized production build...')
-  console.log('Compiling client...')
+  console.log(
+    chalk.cyan('Creating an optimized production build...'),
+  )
+  console.log(
+    chalk.cyan('Compiling client...'),
+  )
+
   // First compile the client. We need it to properly output assets.json (asset
   // manifest file with the correct hashes on file names BEFORE we can start
   // the server compiler.
@@ -102,54 +101,43 @@ ${razzle.port !== '3000' && `PORT=${razzle.port}`}
       if (err) {
         reject(err)
       }
+
+      clearConsole()
+
       const clientMessages = formatWebpackMessages(
         clientStats.toJson({}, true),
       )
+
       if (clientMessages.errors.length) {
         return reject(new Error(clientMessages.errors.join('\n\n')))
       }
-      if (
-        process.env.CI &&
-        (typeof process.env.CI !== 'string' ||
-          process.env.CI.toLowerCase() !== 'false') &&
-        clientMessages.warnings.length
-      ) {
-        console.log(
-          chalk.yellow(
-            '\nTreating warnings as errors because process.env.CI = true.\n' +
-            'Most CI servers set it automatically.\n',
-          ),
-        )
-        return reject(new Error(clientMessages.warnings.join('\n\n')))
-      }
 
-      console.log(chalk.green('Compiled client successfully.'))
-      console.log('Compiling server...')
+      console.log(
+        chalk.cyan('Compiled client successfully.'),
+      )
+      console.log(
+        chalk.cyan('Compiling server...'),
+      )
+
       compile(serverConfig, (err, serverStats) => {
         if (err) {
           reject(err)
         }
+
         const serverMessages = formatWebpackMessages(
           serverStats.toJson({}, true),
         )
+
         if (serverMessages.errors.length) {
           return reject(new Error(serverMessages.errors.join('\n\n')))
         }
-        if (
-          process.env.CI &&
-          (typeof process.env.CI !== 'string' ||
-            process.env.CI.toLowerCase() !== 'false') &&
-          serverMessages.warnings.length
-        ) {
-          console.log(
-            chalk.yellow(
-              '\nTreating warnings as errors because process.env.CI = true.\n' +
-              'Most CI servers set it automatically.\n',
-            ),
-          )
-          return reject(new Error(serverMessages.warnings.join('\n\n')))
-        }
-        console.log(chalk.green('Compiled server successfully.'))
+
+        console.log(
+          chalk.cyan('Compiled server successfully.'),
+        )
+
+        clearConsole()
+
         return resolve({
           stats: clientStats,
           previousFileSizes,
@@ -175,12 +163,14 @@ function copyPublicFolder() {
 // Wrap webpack compile in a try catch.
 function compile(config, cb) {
   let compiler
+
   try {
     compiler = webpack(config)
-  } catch (e) {
-    printErrors('Failed to compile.', [e])
+  } catch (err) {
+    console.log(err.message)
     process.exit(1)
   }
+
   compiler.run((err, stats) => {
     cb(err, stats)
   })
