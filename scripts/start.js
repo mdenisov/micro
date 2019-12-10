@@ -20,7 +20,7 @@ const webpack = require('webpack')
 const WebpackDevServer = require('webpack-dev-server')
 
 const paths = require('../config/paths');
-const configFactory = require('../config/createConfig');
+const createConfig = require('../config/createConfig');
 
 process.noDeprecation = true; // turns off that loadQuery clutter.
 
@@ -72,8 +72,8 @@ setPorts()
 
     // Create dev configs using our config factory, passing in razzle file as
     // options.
-    let clientConfig = configFactory('web', 'dev', razzle, webpack);
-    let serverConfig = configFactory('node', 'dev', razzle, webpack);
+    let clientConfig = createConfig('web', 'dev', razzle, webpack);
+    let serverConfig = createConfig('node', 'dev', razzle, webpack);
 
     // Compile our assets with webpack
     const clientCompiler = compile(clientConfig);

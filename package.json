@@ -1,13 +1,9 @@
 {
   "name": "frontend",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "bin": {
-    "frontend": "./bin/frontend.js"
-  },
   "scripts": {
-    "start:prod": "NODE_ENV=production node build/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -45,7 +41,6 @@
     "start-server-webpack-plugin": "^2.2.5",
     "style-loader": "^1.0.1",
     "terser-webpack-plugin": "^2.2.2",
-    "ts-loader": "^6.2.1",
     "url-loader": "^3.0.0",
     "webpack": "^4.41.2",
     "webpack-dev-server": "^3.9.0",
