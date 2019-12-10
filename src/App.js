@@ -1,9 +1,8 @@
-import * as React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import * as React from 'react'
+import { Route, Switch } from 'react-router-dom'
+import './App.css'
+import Home from './Home'
 // import Loadable from 'react-loadable';
-
-import './App.css';
-import Home from './Home';
 
 // const Home = Loadable({
 //   loader: () => import(/* webpackChunkName: "home" */ './Home'),
@@ -12,8 +11,8 @@ import Home from './Home';
 
 const App = () => (
   <Switch>
-    <Route exact path="/" component={Home} />
+    <Route exact path="/" component={Home}/>
   </Switch>
-);
+)
 
-export default App;
+export default App

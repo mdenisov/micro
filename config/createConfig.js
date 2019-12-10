@@ -1,20 +1,28 @@
-const fs = require('fs-extra');
-const path = require('path');
-const webpack = require('webpack');
-const TerserPlugin = require('terser-webpack-plugin');
-const nodeExternals = require('webpack-node-externals');
-const AssetsPlugin = require('assets-webpack-plugin');
-const StartServerPlugin = require('start-server-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const safePostCssParser = require('postcss-safe-parser');
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
-const paths = require('./paths');
-const runPlugin = require('./runPlugin');
-const getClientEnv = require('./env').getClientEnv;
-const nodePath = require('./env').nodePath;
+const fs = require('fs-extra')
+const path = require('path')
+const webpack = require('webpack')
+const TerserPlugin = require('terser-webpack-plugin')
+const nodeExternals = require('webpack-node-externals')
+const AssetsPlugin = require('assets-webpack-plugin')
+const StartServerPlugin = require('start-server-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const safePostCssParser = require('postcss-safe-parser')
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
+const paths = require('./paths')
+const runPlugin = require('./runPlugin')
+const getClientEnv = require('./env').getClientEnv
+const nodePath = require('./env').nodePath
 const errorOverlayMiddleware = require('react-dev-utils/errorOverlayMiddleware')
 const evalSourceMapMiddleware = require('react-dev-utils/evalSourceMapMiddleware')
-const WebpackBar = require('webpackbar');
+const WebpackBar = require('webpackbar')
+const eslint = require('eslint')
+
+// Check if TypeScript is setup
+const useTypeScript = fs.existsSync(paths.appTsConfig)
+
+// style files regexes
+const cssRegex = /\.css$/
+const cssModuleRegex = /\.module\.css$/
 
 const postCssOptions = {
   ident: 'postcss', // https://webpack.js.org/guides/migrating/#complex-options
@@ -27,7 +35,7 @@ const postCssOptions = {
       stage: 3,
     }),
   ],
-};
+}
 
 // This is the Webpack configuration factory. It's the juice!
 module.exports = (
@@ -41,44 +49,44 @@ module.exports = (
     plugins,
     modifyBabelOptions,
   },
-  webpackObject
+  webpackObject,
 ) => {
   // First we check to see if the user has a custom .babelrc file, otherwise
   // we just use babel-preset-razzle.
-  const hasBabelRc = fs.existsSync(paths.appBabelRc);
+  const hasBabelRc = fs.existsSync(paths.appBabelRc)
   const mainBabelOptions = {
     babelrc: true,
     cacheDirectory: true,
     presets: [],
-  };
+  }
 
   if (!hasBabelRc) {
-    mainBabelOptions.presets.push(require.resolve('./babel'));
+    mainBabelOptions.presets.push(require.resolve('./babel'))
   }
 
   // Allow app to override babel options
   const babelOptions = modifyBabelOptions
     ? modifyBabelOptions(mainBabelOptions)
-    : mainBabelOptions;
+    : mainBabelOptions
 
   if (hasBabelRc && babelOptions.babelrc) {
-    console.log('Using .babelrc defined in your app root');
+    console.log('Using .babelrc defined in your app root')
   }
 
   // Define some useful shorthands.
-  const IS_NODE = target === 'node';
-  const IS_WEB = target === 'web';
-  const IS_PROD = env === 'prod';
-  const IS_DEV = env === 'dev';
-  process.env.NODE_ENV = IS_PROD ? 'production' : 'development';
+  const IS_NODE = target === 'node'
+  const IS_WEB = target === 'web'
+  const IS_PROD = env === 'prod'
+  const IS_DEV = env === 'dev'
+  process.env.NODE_ENV = IS_PROD ? 'production' : 'development'
 
-  const dotenv = getClientEnv(target, { clearConsole, host, port });
+  const dotenv = getClientEnv(target, { clearConsole, host, port })
 
-  const devServerPort = parseInt(dotenv.raw.PORT, 10) + 1;
+  const devServerPort = parseInt(dotenv.raw.PORT, 10) + 1
   // VMs, Docker containers might not be available at localhost:3001. CLIENT_PUBLIC_PATH can override.
   const clientPublicPath =
     dotenv.raw.CLIENT_PUBLIC_PATH ||
-    (IS_DEV ? `http://${dotenv.raw.HOST}:${devServerPort}/` : '/');
+    (IS_DEV ? `http://${dotenv.raw.HOST}:${devServerPort}/` : '/')
 
   // This is our base webpack config.
   let config = {
@@ -92,12 +100,15 @@ module.exports = (
     devtool: IS_DEV ? 'cheap-module-source-map' : 'source-map',
     // We need to tell webpack how to resolve both Razzle's node_modules and
     // the users', so we use resolve and resolveLoader.
+    stats: false,
     resolve: {
       modules: ['node_modules', paths.appNodeModules].concat(
         // It is guaranteed to exist because we tweak it in `env.js`
-        nodePath.split(path.delimiter).filter(Boolean)
+        nodePath.split(path.delimiter).filter(Boolean),
       ),
-      extensions: ['.mjs', '.jsx', '.js', '.json'],
+      extensions: paths.moduleFileExtensions
+        .map(ext => `.${ext}`)
+        .filter(ext => useTypeScript || !ext.includes('ts')),
       alias: {
         // This is required so symlinks work during development.
         'webpack/hot/poll': require.resolve('webpack/hot/poll'),
@@ -110,23 +121,63 @@ module.exports = (
       strictExportPresence: true,
       rules: [
         // Disable require.ensure as it's not a standard language feature.
-        // { parser: { requireEnsure: false } },
+        { parser: { requireEnsure: false } },
+
+        // First, run the linter.
+        // It's important to do this before Babel processes the JS.
+        {
+          test: /\.(js|mjs|jsx|ts|tsx)$/,
+          enforce: 'pre',
+          use: [
+            {
+              options: {
+                cache: true,
+                formatter: require.resolve('react-dev-utils/eslintFormatter'),
+                eslintPath: require.resolve('eslint'),
+                resolvePluginsRelativeTo: __dirname,
+                ignore: process.env.EXTEND_ESLINT === 'true',
+                baseConfig: (() => {
+                  // We allow overriding the config only if the env variable is set
+                  // if (process.env.EXTEND_ESLINT === 'true') {
+                  const eslintCli = new eslint.CLIEngine()
+                  let eslintConfig
+                  try {
+                    eslintConfig = eslintCli.getConfigForFile(
+                      paths.appClientIndexJs,
+                    )
+                  } catch (e) {
+                    console.error(e)
+                    process.exit(1)
+                  }
+                  return eslintConfig
+                  // } else {
+                  //   return {
+                  //     extends: [require.resolve('eslint-config-react-app')],
+                  //   };
+                  // }
+                })(),
+                useEslintrc: false,
+                // @remove-on-eject-end
+              },
+              loader: require.resolve('eslint-loader'),
+            },
+          ],
+          include: paths.appSrc,
+        },
+
         // Avoid "require is not defined" errors
         {
           test: /\.mjs$/,
           include: /node_modules/,
           type: 'javascript/auto',
         },
-        // Transform ES6 with Babel
+        // Process application JS with Babel.
+        // The preset includes JSX, Flow, TypeScript, and some ESnext features.
         {
-          test: /\.(js|jsx|mjs)$/,
+          test: /\.(js|mjs|jsx|ts|tsx)$/,
           include: [paths.appSrc],
-          use: [
-            {
-              loader: require.resolve('babel-loader'),
-              options: babelOptions,
-            },
-          ],
+          loader: require.resolve('babel-loader'),
+          options: babelOptions,
         },
         {
           exclude: [
@@ -170,12 +221,10 @@ module.exports = (
         //
         // Note: this yields the exact same CSS config as create-react-app.
         {
-          test: /\.css$/,
+          test: cssRegex,
           exclude: [paths.appBuild, /\.module\.css$/],
           use: IS_NODE
-            ? // Style-loader does not work in Node.js without some crazy
-              // magic. Luckily we just need css-loader.
-            [
+            ? [
               {
                 loader: require.resolve('css-loader'),
                 options: {
@@ -216,7 +265,7 @@ module.exports = (
         // Adds support for CSS Modules (https://github.com/css-modules/css-modules)
         // using the extension .module.css
         {
-          test: /\.module\.css$/,
+          test: cssModuleRegex,
           exclude: [paths.appBuild],
           use: IS_NODE
             ? [
@@ -266,7 +315,7 @@ module.exports = (
         },
       ],
     },
-  };
+  }
 
   if (IS_NODE) {
     // We want to uphold node's __filename, and __dirname.
@@ -274,7 +323,7 @@ module.exports = (
       __console: false,
       __dirname: false,
       __filename: false,
-    };
+    }
 
     // We need to tell webpack what to bundle into our Node bundle.
     config.externals = [
@@ -287,7 +336,7 @@ module.exports = (
           /\.(css|scss|sass|sss|less)$/,
         ].filter(x => x),
       }),
-    ];
+    ]
 
     // Specify webpack Node.js output path and filename
     config.output = {
@@ -295,7 +344,7 @@ module.exports = (
       publicPath: clientPublicPath,
       filename: 'server.js',
       libraryTarget: 'commonjs2',
-    };
+    }
     // Add some plugins...
     config.plugins = [
       // We define environment variables that can be accessed globally in our
@@ -304,25 +353,25 @@ module.exports = (
       new webpack.optimize.LimitChunkCountPlugin({
         maxChunks: 1,
       }),
-    ];
+    ]
 
-    config.entry = [paths.appServerIndexJs];
+    config.entry = [paths.appServerIndexJs]
 
     if (IS_DEV) {
       // Use watch mode
-      config.watch = true;
-      config.entry.unshift('webpack/hot/poll?300');
+      config.watch = true
+      config.entry.unshift('webpack/hot/poll?300')
 
       // Pretty format server errors
-      config.entry.unshift('razzle-dev-utils/prettyNodeErrors');
+      config.entry.unshift('razzle-dev-utils/prettyNodeErrors')
 
-      const nodeArgs = ['-r', 'source-map-support/register'];
+      const nodeArgs = ['-r', 'source-map-support/register']
 
       // Passthrough --inspect and --inspect-brk flags (with optional [host:port] value) to node
       if (process.env.INSPECT_BRK) {
-        nodeArgs.push(process.env.INSPECT_BRK);
+        nodeArgs.push(process.env.INSPECT_BRK)
       } else if (process.env.INSPECT) {
-        nodeArgs.push(process.env.INSPECT);
+        nodeArgs.push(process.env.INSPECT)
       }
 
       config.plugins = [
@@ -336,7 +385,7 @@ module.exports = (
         }),
         // Ignore assets.json to avoid infinite recompile bug
         new webpack.WatchIgnorePlugin([paths.appManifest]),
-      ];
+      ]
     }
   }
 
@@ -354,7 +403,7 @@ module.exports = (
       //   writeToFileEmit: true,
       //   filename: 'manifest.json',
       // }),
-    ];
+    ]
 
     if (IS_DEV) {
       // Setup Webpack Dev Server on port 3001 and
@@ -364,7 +413,7 @@ module.exports = (
           require.resolve('razzle-dev-utils/webpackHotDevClient'),
           paths.appClientIndexJs,
         ],
-      };
+      }
 
       // Configure our client bundles output. Not the public path is to 3001.
       config.output = {
@@ -376,7 +425,7 @@ module.exports = (
         chunkFilename: 'static/js/[name].chunk.js',
         devtoolModuleFilenameTemplate: info =>
           path.resolve(info.resourcePath).replace(/\\/g, '/'),
-      };
+      }
       // Configure webpack-dev-server to serve our client-side bundle from
       // http://${dotenv.raw.HOST}:3001
       config.devServer = {
@@ -398,6 +447,7 @@ module.exports = (
         },
         host: dotenv.raw.HOST,
         hot: true,
+        stats: 'errors-only',
         noInfo: true,
         overlay: false,
         port: devServerPort,
@@ -414,7 +464,7 @@ module.exports = (
           // This lets us open files from the runtime error overlay.
           app.use(errorOverlayMiddleware())
         },
-      };
+      }
       // Add client-only development plugins
       config.plugins = [
         ...config.plugins,
@@ -422,24 +472,14 @@ module.exports = (
           multiStep: true,
         }),
         new webpack.DefinePlugin(dotenv.stringified),
-      ];
+      ]
 
-      config.optimization = {
-        // @todo automatic vendor bundle
-        // Automatically split vendor and commons
-        // https://twitter.com/wSokra/status/969633336732905474
-        // splitChunks: {
-        //   chunks: 'all',
-        // },
-        // Keep the runtime chunk seperated to enable long term caching
-        // https://twitter.com/wSokra/status/969679223278505985
-        // runtimeChunk: true,
-      };
+      config.optimization = {}
     } else {
       // Specify production entry point (/client/index.js)
       config.entry = {
         client: paths.appClientIndexJs,
-      };
+      }
 
       // Specify the client output directory and paths. Notice that we have
       // changed the publiPath to just '/' from http://localhost:3001. This is because
@@ -450,7 +490,7 @@ module.exports = (
         filename: 'static/js/bundle.[chunkhash:8].js',
         chunkFilename: 'static/js/[name].[chunkhash:8].chunk.js',
         libraryTarget: 'var',
-      };
+      }
 
       config.plugins = [
         ...config.plugins,
@@ -467,7 +507,7 @@ module.exports = (
         }),
         new webpack.HashedModuleIdsPlugin(),
         new webpack.optimize.AggressiveMergingPlugin(),
-      ];
+      ]
 
       config.optimization = {
         minimize: true,
@@ -530,7 +570,7 @@ module.exports = (
             },
           }),
         ],
-      };
+      }
     }
   }
 
@@ -541,7 +581,7 @@ module.exports = (
         color: target === 'web' ? '#f56be2' : '#c065f4',
         name: target === 'web' ? 'client' : 'server',
       }),
-    ];
+    ]
   }
 
   // Apply razzle plugins, if they are present in razzle.config.js
@@ -551,16 +591,16 @@ module.exports = (
         plugin,
         config,
         { target, dev: IS_DEV },
-        webpackObject
-      );
-    });
+        webpackObject,
+      )
+    })
   }
 
   // Check if razzle.config has a modify function. If it does, call it on the
   // configs we created.
   if (modify) {
-    config = modify(config, { target, dev: IS_DEV }, webpackObject);
+    config = modify(config, { target, dev: IS_DEV }, webpackObject)
   }
 
-  return config;
-};
+  return config
+}

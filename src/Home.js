@@ -1,18 +1,14 @@
-import React from 'react';
+import React from 'react'
 
-import './Home.css';
-import logo from './react.svg';
+import './Home.css'
+import logo from './react.svg'
 
 function Home() {
   return (
     <div className="App">
-      {/*<Helmet>*/}
-      {/*  <title>Welcome to Frontend</title>*/}
-      {/*</Helmet>*/}
-
       <header className="App-header">
-        <img src={ logo } className="App-logo" alt="logo"/>
-        <p />
+        <img src={logo} className="App-logo" alt="logo"/>
+        <p/>
         <p>
           Edit <code>src/App.js</code> and save to reload.
         </p>
@@ -26,7 +22,7 @@ function Home() {
         </a>
       </header>
     </div>
-  );
+  )
 }
 
-export default Home;
+export default Home

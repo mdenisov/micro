@@ -13,16 +13,16 @@ const chalk = require('react-dev-utils/chalk')
 
 const openBrowser = require('react-dev-utils/openBrowser')
 const clearConsole = require('react-dev-utils/clearConsole')
-const setPorts = require('razzle-dev-utils/setPorts');
+const setPorts = require('razzle-dev-utils/setPorts')
 
-const fs = require('fs-extra');
+const fs = require('fs-extra')
 const webpack = require('webpack')
 const WebpackDevServer = require('webpack-dev-server')
 
-const paths = require('../config/paths');
-const createConfig = require('../config/createConfig');
+const paths = require('../config/paths')
+const configFactory = require('../config/createConfig')
 
-process.noDeprecation = true; // turns off that loadQuery clutter.
+process.noDeprecation = true // turns off that loadQuery clutter.
 
 const isInteractive = process.stdout.isTTY
 
@@ -32,14 +32,14 @@ const HOST = process.env.HOST || '0.0.0.0'
 
 // Webpack compile in a try-catch
 function compile(config) {
-  let compiler;
+  let compiler
   try {
-    compiler = webpack(config);
+    compiler = webpack(config)
   } catch (err) {
     console.log(err)
-    process.exit(1);
+    process.exit(1)
   }
-  return compiler;
+  return compiler
 }
 
 setPorts()
@@ -50,58 +50,59 @@ setPorts()
 
     // Optimistically, we make the console look exactly like the output of our
     // FriendlyErrorsPlugin during compilation, so the user has immediate feedback.
-    clearConsole();
+    clearConsole()
     console.log(
-      chalk.cyan('Compiling...')
-    );
-    let razzle = {};
+      chalk.cyan('Compiling...'),
+    )
+    let razzle = {}
 
     // Check for razzle.config.js file
     if (fs.existsSync(paths.appRazzleConfig)) {
       try {
-        razzle = require(paths.appRazzleConfig);
+        razzle = require(paths.appRazzleConfig)
       } catch (err) {
-        clearConsole();
+        clearConsole()
         console.log(
           chalk.cyan('Invalid razzle.config.js file.'),
-          err
+          err,
         )
-        process.exit(1);
+        process.exit(1)
       }
     }
 
-    // Create dev configs using our config factory, passing in razzle file as
-    // options.
-    let clientConfig = createConfig('web', 'dev', razzle, webpack);
-    let serverConfig = createConfig('node', 'dev', razzle, webpack);
+    // Create dev configs using our config factory, passing in razzle file as options.
+    const clientConfig = configFactory('web', 'dev', razzle, webpack)
+    const serverConfig = configFactory('node', 'dev', razzle, webpack)
 
     // Compile our assets with webpack
-    const clientCompiler = compile(clientConfig);
-    const serverCompiler = compile(serverConfig);
+    const clientCompiler = compile(clientConfig)
+    const serverCompiler = compile(serverConfig)
 
     // Instatiate a variable to track server watching
-    let watching;
+    let watching
 
     // Start our server webpack instance in watch mode after assets compile
     clientCompiler.plugin('done', () => {
       // If we've already started the server watcher, bail early.
       if (watching) {
-        return;
+        return
       }
       // Otherwise, create a new watcher for our server code.
       watching = serverCompiler.watch(
         {
-          quiet: true,
+          noInfo: true,
+          quiet: false,
           stats: 'none',
         },
         /* eslint-disable no-unused-vars */
-        stats => {}
-      );
-    });
+        stats => {
+        },
+      )
+    })
 
     // Create a new instance of Webpack-dev-server for our client assets.
     // This will actually run on a different port than the users app.
-    const devServer = new WebpackDevServer(clientCompiler, clientConfig.devServer);
+    const devServer = new WebpackDevServer(clientCompiler, clientConfig.devServer)
 
     // Launch WebpackDevServer.
     devServer.listen((DEFAULT_PORT + 1) || 3001, HOST, err => {
@@ -113,7 +114,7 @@ setPorts()
         clearConsole()
       }
 
-      openBrowser(`http://localhost:3000`)
+      openBrowser(`http://localhost:${DEFAULT_PORT}`)
     });
 
     ['SIGINT', 'SIGTERM'].forEach(function (sig) {
