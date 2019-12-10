@@ -1,23 +1,20 @@
-const fs = require('fs-extra')
-const path = require('path')
-const webpack = require('webpack')
-const TerserPlugin = require('terser-webpack-plugin')
-const nodeExternals = require('webpack-node-externals')
-const AssetsPlugin = require('assets-webpack-plugin')
-// const StartServerPlugin = require('start-server-webpack-plugin')
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
-const safePostCssParser = require('postcss-safe-parser')
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
+const fs = require('fs-extra');
+const path = require('path');
+const webpack = require('webpack');
+const TerserPlugin = require('terser-webpack-plugin');
+const nodeExternals = require('webpack-node-externals');
+const AssetsPlugin = require('assets-webpack-plugin');
+const StartServerPlugin = require('start-server-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const safePostCssParser = require('postcss-safe-parser');
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const paths = require('./paths');
+const runPlugin = require('./runPlugin');
+const getClientEnv = require('./env').getClientEnv;
+const nodePath = require('./env').nodePath;
 const errorOverlayMiddleware = require('react-dev-utils/errorOverlayMiddleware')
-// const WebpackBar = require('webpackbar')
-// const { ReactLoadablePlugin } = require('react-loadable/webpack')
-// const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
-// const ErrorOverlayPlugin = require('error-overlay-webpack-plugin')
-
-const babelPreset = require('./babel')
-const paths = require('./paths')
-const runPlugin = require('./runPlugin')
-const getClientEnvironment = require('./env')
+const evalSourceMapMiddleware = require('react-dev-utils/evalSourceMapMiddleware')
+const WebpackBar = require('webpackbar');
 
 const postCssOptions = {
   ident: 'postcss', // https://webpack.js.org/guides/migrating/#complex-options
@@ -30,7 +27,7 @@ const postCssOptions = {
       stage: 3,
     }),
   ],
-}
+};
 
 // This is the Webpack configuration factory. It's the juice!
 module.exports = (
@@ -44,46 +41,44 @@ module.exports = (
     plugins,
     modifyBabelOptions,
   },
-  webpackObject,
+  webpackObject
 ) => {
   // First we check to see if the user has a custom .babelrc file, otherwise
-  const hasBabelRc = fs.existsSync(paths.appBabelRc)
+  // we just use babel-preset-razzle.
+  const hasBabelRc = fs.existsSync(paths.appBabelRc);
   const mainBabelOptions = {
     babelrc: true,
     cacheDirectory: true,
-    presets: [
-      babelPreset,
-    ],
-  }
+    presets: [],
+  };
 
-  // if (!hasBabelRc) {
-  //   mainBabelOptions.presets.push(require.resolve('../babel.js'));
-  // }
+  if (!hasBabelRc) {
+    mainBabelOptions.presets.push(require.resolve('./babel'));
+  }
 
   // Allow app to override babel options
   const babelOptions = modifyBabelOptions
     ? modifyBabelOptions(mainBabelOptions)
-    : mainBabelOptions
+    : mainBabelOptions;
 
   if (hasBabelRc && babelOptions.babelrc) {
-    console.log('Using .babelrc defined in your app root')
+    console.log('Using .babelrc defined in your app root');
   }
 
   // Define some useful shorthands.
-  const IS_NODE = target === 'node'
-  const IS_WEB = target === 'web'
-  const IS_PROD = env === 'prod'
-  const IS_DEV = env === 'dev'
+  const IS_NODE = target === 'node';
+  const IS_WEB = target === 'web';
+  const IS_PROD = env === 'prod';
+  const IS_DEV = env === 'dev';
+  process.env.NODE_ENV = IS_PROD ? 'production' : 'development';
 
-  process.env.NODE_ENV = IS_PROD ? 'production' : 'development'
+  const dotenv = getClientEnv(target, { clearConsole, host, port });
 
-  const dotenv = getClientEnvironment(target, { clearConsole, host, port })
-  const devServerPort = parseInt(dotenv.raw.PORT, 10) + 1
-
+  const devServerPort = parseInt(dotenv.raw.PORT, 10) + 1;
   // VMs, Docker containers might not be available at localhost:3001. CLIENT_PUBLIC_PATH can override.
   const clientPublicPath =
     dotenv.raw.CLIENT_PUBLIC_PATH ||
-    (IS_DEV ? `http://${dotenv.raw.HOST}:${devServerPort}/` : '/')
+    (IS_DEV ? `http://${dotenv.raw.HOST}:${devServerPort}/` : '/');
 
   // This is our base webpack config.
   let config = {
@@ -95,18 +90,18 @@ module.exports = (
     target: target,
     // Controversially, decide on sourcemaps.
     devtool: IS_DEV ? 'cheap-module-source-map' : 'source-map',
-    // We need to tell webpack how to resolve both Frontend's node_modules and
+    // We need to tell webpack how to resolve both Razzle's node_modules and
     // the users', so we use resolve and resolveLoader.
     resolve: {
       modules: ['node_modules', paths.appNodeModules].concat(
         // It is guaranteed to exist because we tweak it in `env.js`
-        // nodePath.split(path.delimiter).filter(Boolean),
+        nodePath.split(path.delimiter).filter(Boolean)
       ),
-      extensions: ['.mjs', '.jsx', '.js', '.ts', '.tsx', '.json'],
-      // alias: {
-      //   // This is required so symlinks work during development.
-      //   'webpack/hot/poll': require.resolve('webpack/hot/poll'),
-      // },
+      extensions: ['.mjs', '.jsx', '.js', '.json'],
+      alias: {
+        // This is required so symlinks work during development.
+        'webpack/hot/poll': require.resolve('webpack/hot/poll'),
+      },
     },
     resolveLoader: {
       modules: [paths.appNodeModules, paths.ownNodeModules],
@@ -124,24 +119,12 @@ module.exports = (
         },
         // Transform ES6 with Babel
         {
-          test: /\.(js|jsx|mjs|ts|tsx)$/,
+          test: /\.(js|jsx|mjs)$/,
           include: [paths.appSrc],
           use: [
             {
               loader: require.resolve('babel-loader'),
               options: babelOptions,
-            },
-          ],
-        },
-        {
-          test: /\.tsx?$/,
-          use: [
-            {
-              loader: require.resolve('ts-loader'),
-              options: {
-                transpileOnly: true,
-                experimentalWatchApi: true,
-              },
             },
           ],
         },
@@ -190,7 +173,9 @@ module.exports = (
           test: /\.css$/,
           exclude: [paths.appBuild, /\.module\.css$/],
           use: IS_NODE
-            ? [
+            ? // Style-loader does not work in Node.js without some crazy
+              // magic. Luckily we just need css-loader.
+            [
               {
                 loader: require.resolve('css-loader'),
                 options: {
@@ -219,6 +204,7 @@ module.exports = (
                   options: {
                     importLoaders: 1,
                     modules: false,
+                    minimize: true,
                   },
                 },
                 {
@@ -236,8 +222,6 @@ module.exports = (
             ? [
               {
                 // on the server we do not need to embed the css and just want the identifier mappings
-                // https://github.com/webpack-contrib/css-loader#scope
-                // loader: require.resolve('css-loader/locals'),
                 loader: require.resolve('css-loader'),
                 options: {
                   mode: 'local',
@@ -270,7 +254,7 @@ module.exports = (
                   options: {
                     modules: true,
                     importLoaders: 1,
-                    minimize: true,
+                    // minimize: true,
                     localIdentName: '[path]__[name]___[local]',
                   },
                 },
@@ -282,7 +266,7 @@ module.exports = (
         },
       ],
     },
-  }
+  };
 
   if (IS_NODE) {
     // We want to uphold node's __filename, and __dirname.
@@ -290,7 +274,7 @@ module.exports = (
       __console: false,
       __dirname: false,
       __filename: false,
-    }
+    };
 
     // We need to tell webpack what to bundle into our Node bundle.
     config.externals = [
@@ -303,7 +287,7 @@ module.exports = (
           /\.(css|scss|sass|sss|less)$/,
         ].filter(x => x),
       }),
-    ]
+    ];
 
     // Specify webpack Node.js output path and filename
     config.output = {
@@ -311,8 +295,7 @@ module.exports = (
       publicPath: clientPublicPath,
       filename: 'server.js',
       libraryTarget: 'commonjs2',
-    }
-
+    };
     // Add some plugins...
     config.plugins = [
       // We define environment variables that can be accessed globally in our
@@ -321,64 +304,71 @@ module.exports = (
       new webpack.optimize.LimitChunkCountPlugin({
         maxChunks: 1,
       }),
-    ]
+    ];
 
-    config.entry = [paths.appServerEntry]
-
-    // Disabling replace env variables for runtime
-    config.optimization = {
-      nodeEnv: false,
-    }
+    config.entry = [paths.appServerIndexJs];
 
     if (IS_DEV) {
       // Use watch mode
-      // config.watch = true
-      // config.entry.unshift('webpack/hot/poll?300')
+      config.watch = true;
+      config.entry.unshift('webpack/hot/poll?300');
 
-      const nodeArgs = ['-r', 'source-map-support/register']
+      // Pretty format server errors
+      config.entry.unshift('razzle-dev-utils/prettyNodeErrors');
+
+      const nodeArgs = ['-r', 'source-map-support/register'];
+
+      // Passthrough --inspect and --inspect-brk flags (with optional [host:port] value) to node
+      if (process.env.INSPECT_BRK) {
+        nodeArgs.push(process.env.INSPECT_BRK);
+      } else if (process.env.INSPECT) {
+        nodeArgs.push(process.env.INSPECT);
+      }
 
       config.plugins = [
         ...config.plugins,
         // Add hot module replacement
         new webpack.HotModuleReplacementPlugin(),
         // Supress errors to console (we use our own logger)
-        // new StartServerPlugin({
-        //   name: 'server.js',
-        //   nodeArgs,
-        // }),
+        new StartServerPlugin({
+          name: 'server.js',
+          nodeArgs,
+        }),
         // Ignore assets.json to avoid infinite recompile bug
-        // new webpack.WatchIgnorePlugin([paths.appManifest, paths.loadableManifest]),
-      ]
+        new webpack.WatchIgnorePlugin([paths.appManifest]),
+      ];
     }
   }
 
   if (IS_WEB) {
     config.plugins = [
-      // new ReactLoadablePlugin({
-      //   filename: paths.loadableManifest,
-      // }),
       // Output our JS and CSS files in a manifest file called assets.json
       // in the build directory.
-      // new AssetsPlugin({
+      new AssetsPlugin({
+        path: paths.appBuild,
+        filename: 'assets.json',
+      }),
+      // Maybe we should move to this???
+      // new ManifestPlugin({
       //   path: paths.appBuild,
-      //   filename: 'assets.json',
+      //   writeToFileEmit: true,
+      //   filename: 'manifest.json',
       // }),
-    ]
+    ];
 
     if (IS_DEV) {
       // Setup Webpack Dev Server on port 3001 and
       // specify our client entry point /client/index.js
       config.entry = {
-        bundle: [
-          require.resolve('react-dev-utils/webpackHotDevClient'),
-          // require.resolve('../utils/webpackHotDevClient'),
-          paths.appClientEntry,
+        client: [
+          require.resolve('razzle-dev-utils/webpackHotDevClient'),
+          paths.appClientIndexJs,
         ],
-      }
+      };
 
       // Configure our client bundles output. Not the public path is to 3001.
       config.output = {
-        path: paths.appBuild,
+        path: paths.appBuildPublic,
         publicPath: clientPublicPath,
         pathinfo: true,
         libraryTarget: 'var',
@@ -386,36 +376,81 @@ module.exports = (
         chunkFilename: 'static/js/[name].chunk.js',
         devtoolModuleFilenameTemplate: info =>
           path.resolve(info.resourcePath).replace(/\\/g, '/'),
-      }
-
+      };
+      // Configure webpack-dev-server to serve our client-side bundle from
+      // http://${dotenv.raw.HOST}:3001
+      config.devServer = {
+        disableHostCheck: true,
+        clientLogLevel: 'none',
+        // contentBase: paths.appBuild,
+        // By default files from `contentBase` will not trigger a page reload.
+        // watchContentBase: true,
+        // Enable gzip compression of generated files.
+        compress: true,
+        // watchContentBase: true,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+        },
+        historyApiFallback: {
+          // Paths with dots should still use the history fallback.
+          // See https://github.com/facebookincubator/create-react-app/issues/387.
+          disableDotRule: true,
+        },
+        host: dotenv.raw.HOST,
+        hot: true,
+        noInfo: true,
+        overlay: false,
+        port: devServerPort,
+        quiet: false,
+        // By default files from `contentBase` will not trigger a page reload.
+        // Reportedly, this avoids CPU overload on some systems.
+        // https://github.com/facebookincubator/create-react-app/issues/293
+        watchOptions: {
+          ignored: /node_modules/,
+        },
+        before(app, server) {
+          // This lets us fetch source contents from webpack for the error overlay
+          app.use(evalSourceMapMiddleware(server))
+          // This lets us open files from the runtime error overlay.
+          app.use(errorOverlayMiddleware())
+        },
+      };
       // Add client-only development plugins
       config.plugins = [
         ...config.plugins,
-        new webpack.HotModuleReplacementPlugin(),
+        new webpack.HotModuleReplacementPlugin({
+          multiStep: true,
+        }),
         new webpack.DefinePlugin(dotenv.stringified),
-        // new BundleAnalyzerPlugin({
-        //   analyzerMode: 'static',
-        //   openAnalyzer: false,
-        // }),
-        // new ErrorOverlayPlugin()
-      ]
+      ];
+
+      config.optimization = {
+        // @todo automatic vendor bundle
+        // Automatically split vendor and commons
+        // https://twitter.com/wSokra/status/969633336732905474
+        // splitChunks: {
+        //   chunks: 'all',
+        // },
+        // Keep the runtime chunk seperated to enable long term caching
+        // https://twitter.com/wSokra/status/969679223278505985
+        // runtimeChunk: true,
+      };
     } else {
       // Specify production entry point (/client/index.js)
       config.entry = {
-        bundle: [paths.appClientEntry],
-      }
+        client: paths.appClientIndexJs,
+      };
 
       // Specify the client output directory and paths. Notice that we have
       // changed the publiPath to just '/' from http://localhost:3001. This is because
       // we will only be using one port in production.
       config.output = {
-        path: paths.appBuild,
+        path: paths.appBuildPublic,
         publicPath: dotenv.raw.PUBLIC_PATH || '/',
-        filename: 'static/js/[name].[chunkhash:8].js',
-        chunkFilename: 'static/js/[name].[chunkhash:8].js',
-        jsonpFunction: 'wsp',
+        filename: 'static/js/bundle.[chunkhash:8].js',
+        chunkFilename: 'static/js/[name].[chunkhash:8].chunk.js',
         libraryTarget: 'var',
-      }
+      };
 
       config.plugins = [
         ...config.plugins,
@@ -424,47 +459,17 @@ module.exports = (
         // Extract our CSS into a files.
         new MiniCssExtractPlugin({
           filename: 'static/css/bundle.[contenthash:8].css',
-          chunkFilename: 'static/css/[name].[contenthash:8].css',
+          chunkFilename: 'static/css/[name].[contenthash:8].chunk.css',
           // allChunks: true because we want all css to be included in the main
           // css bundle when doing code splitting to avoid FOUC:
           // https://github.com/facebook/create-react-app/issues/2415
           allChunks: true,
         }),
         new webpack.HashedModuleIdsPlugin(),
-        // new webpack.optimize.AggressiveMergingPlugin(),
-      ]
+        new webpack.optimize.AggressiveMergingPlugin(),
+      ];
 
       config.optimization = {
-        removeAvailableModules: true,
-        noEmitOnErrors: true,
-        checkWasmTypes: false,
-        nodeEnv: false,
-        moduleIds: 'hashed',
-        usedExports: true,
-
-        runtimeChunk: {
-          name: 'runtime',
-        },
-
-        splitChunks: {
-          chunks: 'all',
-          cacheGroups: {
-            default: false,
-            vendors: false,
-            commons: {
-              name: 'commons',
-              chunks: 'all',
-              minChunks: 3,
-              reuseExistingChunk: true,
-            },
-            react: {
-              name: 'commons',
-              chunks: 'all',
-              test: /[\\/]node_modules[\\/](react|react-dom|scheduler|react-loadable)[\\/]/,
-            },
-          },
-        },
-
         minimize: true,
         minimizer: [
           new TerserPlugin({
@@ -496,10 +501,10 @@ module.exports = (
               },
               output: {
                 ecma: 5,
-                safari10: true,
                 comments: false,
+                // Turned on because emoji and regex is not minified properly using default
+                // https://github.com/facebook/create-react-app/issues/2488
                 ascii_only: true,
-                beautify: false,
               },
             },
             // Use multi-process parallel running to improve the build speed
@@ -525,37 +530,37 @@ module.exports = (
             },
           }),
         ],
-      }
+      };
     }
   }
 
   if (IS_DEV) {
     config.plugins = [
       ...config.plugins,
-      // new WebpackBar({
-      //   color: target === 'web' ? '#f56be2' : '#c065f4',
-      //   name: target === 'web' ? 'client' : 'server',
-      // }),
-    ]
+      new WebpackBar({
+        color: target === 'web' ? '#f56be2' : '#c065f4',
+        name: target === 'web' ? 'client' : 'server',
+      }),
+    ];
   }
 
-  // Apply frontend plugins, if they are present in frontend.config.js
+  // Apply razzle plugins, if they are present in razzle.config.js
   if (Array.isArray(plugins)) {
     plugins.forEach(plugin => {
       config = runPlugin(
         plugin,
         config,
         { target, dev: IS_DEV },
-        webpackObject,
-      )
-    })
+        webpackObject
+      );
+    });
   }
 
-  // Check if frontend.config has a modify function. If it does, call it on the
+  // Check if razzle.config has a modify function. If it does, call it on the
   // configs we created.
   if (modify) {
-    config = modify(config, { target, dev: IS_DEV }, webpackObject)
+    config = modify(config, { target, dev: IS_DEV }, webpackObject);
   }
 
-  return config
-}
+  return config;
+};

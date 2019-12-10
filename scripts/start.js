@@ -9,148 +9,111 @@ process.on('unhandledRejection', err => {
   throw err
 })
 
-// Ensure environment variables are read.
-require('../config/env')
-
-const fs = require('fs')
 const chalk = require('react-dev-utils/chalk')
+
+const openBrowser = require('react-dev-utils/openBrowser')
+const clearConsole = require('react-dev-utils/clearConsole')
+const setPorts = require('razzle-dev-utils/setPorts');
+
+const fs = require('fs-extra');
 const webpack = require('webpack')
 const WebpackDevServer = require('webpack-dev-server')
-const clearConsole = require('react-dev-utils/clearConsole')
-const checkRequiredFiles = require('react-dev-utils/checkRequiredFiles')
-const {
-  choosePort,
-  createCompiler,
-  prepareProxy,
-  prepareUrls,
-} = require('react-dev-utils/WebpackDevServerUtils')
-const openBrowser = require('react-dev-utils/openBrowser')
-const paths = require('../config/paths')
-const clientConfigFactory = require('../config/webpack.config')
-const serverConfigFactory = require('../config/webpack.server.config')
-const createDevServerConfig = require('../config/webpackDevServer.config')
 
-const useYarn = fs.existsSync(paths.yarnLockFile)
+const paths = require('../config/paths');
+const configFactory = require('../config/createConfig');
+
+process.noDeprecation = true; // turns off that loadQuery clutter.
+
 const isInteractive = process.stdout.isTTY
-
-// Warn and crash if required files are missing
-if (!checkRequiredFiles([paths.appHtml, paths.appClientEntry])) {
-  process.exit(1)
-}
 
 // Tools like Cloud9 rely on this.
 const DEFAULT_PORT = parseInt(process.env.PORT, 10) || 3000
 const HOST = process.env.HOST || '0.0.0.0'
 
-if (process.env.HOST) {
-  console.log(
-    chalk.cyan(
-      `Attempting to bind to HOST environment variable: ${chalk.yellow(
-        chalk.bold(process.env.HOST),
-      )}`,
-    ),
-  )
-  console.log(
-    'If this was unintentional, check that you haven\'t mistakenly set it in your shell.',
-  )
-  console.log()
+// Webpack compile in a try-catch
+function compile(config) {
+  let compiler;
+  try {
+    compiler = webpack(config);
+  } catch (err) {
+    console.log(err)
+    process.exit(1);
+  }
+  return compiler;
 }
 
-// We require that you explicitly set browsers and do not fall back to
-// browserslist defaults.
-const { checkBrowsers } = require('react-dev-utils/browsersHelper')
-checkBrowsers(paths.appPath, isInteractive)
+setPorts()
   .then(() => {
-    // We attempt to use the default port but if it is busy, we offer the user to
-    // run on a different port. `choosePort()` Promise resolves to the next free port.
-    return choosePort(HOST, DEFAULT_PORT)
-  })
-  .then(port => {
-    if (port == null) {
-      // We have not found a port.
-      return
-    }
+    // Remove all content but keep the directory so that
+    // if you're in it, you don't end up in Trash
+    fs.emptyDirSync(paths.appBuild)
 
-    let userConfig = {};
+    // Optimistically, we make the console look exactly like the output of our
+    // FriendlyErrorsPlugin during compilation, so the user has immediate feedback.
+    clearConsole();
+    console.log(
+      chalk.cyan('Compiling...')
+    );
+    let razzle = {};
 
-    // Check for frontend.config.js file
-    if (fs.existsSync(paths.appFrontendConfig)) {
+    // Check for razzle.config.js file
+    if (fs.existsSync(paths.appRazzleConfig)) {
       try {
-        userConfig = require(paths.appFrontendConfig)
-      } catch (e) {
-        clearConsole()
-        console.error('Invalid frontend.config.js file.', e)
-        process.exit(1)
+        razzle = require(paths.appRazzleConfig);
+      } catch (err) {
+        clearConsole();
+        console.log(
+          chalk.cyan('Invalid razzle.config.js file.'),
+          err
+        )
+        process.exit(1);
       }
     }
 
-    const clientConfig = clientConfigFactory('development', userConfig)
-    const serverConfig = serverConfigFactory('development', userConfig)
+    // Create dev configs using our config factory, passing in razzle file as
+    // options.
+    let clientConfig = configFactory('web', 'dev', razzle, webpack);
+    let serverConfig = configFactory('node', 'dev', razzle, webpack);
 
-    console.log(serverConfig)
+    // Compile our assets with webpack
+    const clientCompiler = compile(clientConfig);
+    const serverCompiler = compile(serverConfig);
 
-    const protocol = process.env.HTTPS === 'true' ? 'https' : 'http'
-    const appName = require(paths.appPackageJson).name
-    const useTypeScript = fs.existsSync(paths.appTsConfig)
-    const tscCompileOnError = process.env.TSC_COMPILE_ON_ERROR === 'true'
-    const urls = prepareUrls(protocol, HOST, port)
-    const devSocket = {
-      warnings: warnings =>
-        devServer.sockWrite(devServer.sockets, 'warnings', warnings),
-      errors: errors =>
-        devServer.sockWrite(devServer.sockets, 'errors', errors),
-    }
-    // Create a webpack compiler that is configured with custom messages.
-    const clientCompiler = createCompiler({
-      appName,
-      config: clientConfig,
-      devSocket,
-      urls,
-      useYarn,
-      useTypeScript,
-      tscCompileOnError,
-      webpack,
-    })
-    // Create a server webpack compiler
-    const serverCompiler = webpack(serverConfig)
+    // Instatiate a variable to track server watching
+    let watching;
 
-    serverCompiler.run((err, stats) => {
-      // cb(err, stats)
-      console.log(err, stats)
-    })
+    // Start our server webpack instance in watch mode after assets compile
+    clientCompiler.plugin('done', () => {
+      // If we've already started the server watcher, bail early.
+      if (watching) {
+        return;
+      }
+      // Otherwise, create a new watcher for our server code.
+      watching = serverCompiler.watch(
+        {
+          quiet: true,
+          stats: 'none',
+        },
+        /* eslint-disable no-unused-vars */
+        stats => {}
+      );
+    });
 
-    // Load proxy config
-    const proxySetting = require(paths.appPackageJson).proxy
-    const proxyConfig = prepareProxy(proxySetting, paths.appPublic)
-    // Serve webpack assets generated by the compiler over a web server.
-    const devServerConfig = createDevServerConfig(
-      proxyConfig,
-      urls.lanUrlForConfig,
-    )
-    const devServer = new WebpackDevServer(clientCompiler, devServerConfig)
+    // Create a new instance of Webpack-dev-server for our client assets.
+    // This will actually run on a different port than the users app.
+    const devServer = new WebpackDevServer(clientCompiler, clientConfig.devServer);
+
     // Launch WebpackDevServer.
-    devServer.listen(port, HOST, err => {
+    devServer.listen((DEFAULT_PORT + 1) || 3001, HOST, err => {
       if (err) {
         return console.log(err)
       }
+
       if (isInteractive) {
         clearConsole()
       }
 
-      // We used to support resolving modules according to `NODE_PATH`.
-      // This now has been deprecated in favor of jsconfig/tsconfig.json
-      // This lets you use absolute paths in imports inside large monorepos:
-      if (process.env.NODE_PATH) {
-        console.log(
-          chalk.yellow(
-            'Setting NODE_PATH to resolve modules absolutely has been deprecated in favor of setting baseUrl in jsconfig.json (or tsconfig.json if you are using TypeScript) and will be removed in a future major release of create-react-app.',
-          ),
-        )
-        console.log()
-      }
-
-      console.log(chalk.cyan('Starting the development server...\n'))
-      openBrowser(urls.localUrlForBrowser)
+      openBrowser(`http://localhost:3000`)
     });
 
     ['SIGINT', 'SIGTERM'].forEach(function (sig) {

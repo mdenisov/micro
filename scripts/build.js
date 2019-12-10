@@ -1,217 +1,186 @@
+#! /usr/bin/env node
+'use strict';
 // Do this as the first thing so that any code reading it knows the right env.
-process.env.BABEL_ENV = 'production'
-process.env.NODE_ENV = 'production'
+process.env.NODE_ENV = 'production';
 
 // Makes the script crash on unhandled rejections instead of silently
 // ignoring them. In the future, promise rejections that are not handled will
 // terminate the Node.js process with a non-zero exit code.
 process.on('unhandledRejection', err => {
-  throw err
-})
+  throw err;
+});
 
 // Ensure environment variables are read.
-require('../config/env')
-// @remove-on-eject-begin
-// Do the preflight checks (only happens before eject).
-// const verifyPackageTree = require('./utils/verifyPackageTree')
-// if (process.env.SKIP_PREFLIGHT_CHECK !== 'true') {
-//   verifyPackageTree()
-// }
-// const verifyTypeScriptSetup = require('./utils/verifyTypeScriptSetup')
-// verifyTypeScriptSetup()
-// @remove-on-eject-end
+require('../config/env');
 
-const path = require('path')
-const chalk = require('react-dev-utils/chalk')
-const fs = require('fs-extra')
-const webpack = require('webpack')
-const configFactory = require('../config/webpack.config')
-const paths = require('../config/paths')
-const checkRequiredFiles = require('react-dev-utils/checkRequiredFiles')
-const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
-const printHostingInstructions = require('react-dev-utils/printHostingInstructions')
-const FileSizeReporter = require('react-dev-utils/FileSizeReporter')
-const printBuildError = require('react-dev-utils/printBuildError')
+const webpack = require('webpack');
+const fs = require('fs-extra');
+const chalk = require('react-dev-utils/chalk');
+const paths = require('../config/paths');
+const createConfig = require('../config/createConfig');
+const printErrors = require('razzle-dev-utils/printErrors');
+const logger = require('razzle-dev-utils/logger');
+const FileSizeReporter = require('react-dev-utils/FileSizeReporter');
+const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages');
+const measureFileSizesBeforeBuild = FileSizeReporter.measureFileSizesBeforeBuild;
+const printFileSizesAfterBuild = FileSizeReporter.printFileSizesAfterBuild;
 
-const measureFileSizesBeforeBuild =
-  FileSizeReporter.measureFileSizesBeforeBuild
-const printFileSizesAfterBuild = FileSizeReporter.printFileSizesAfterBuild
-const useYarn = fs.existsSync(paths.yarnLockFile)
-
-// These sizes are pretty large. We'll warn for bundles exceeding them.
-const WARN_AFTER_BUNDLE_GZIP_SIZE = 512 * 1024
-const WARN_AFTER_CHUNK_GZIP_SIZE = 1024 * 1024
-
-const isInteractive = process.stdout.isTTY
-
-// Warn and crash if required files are missing
-if (!checkRequiredFiles([paths.appHtml, paths.appClientEntry])) {
-  process.exit(1)
-}
-
-// Generate configuration
-const config = configFactory('production')
-
-// We require that you explicitly set browsers and do not fall back to
-// browserslist defaults.
-const { checkBrowsers } = require('react-dev-utils/browsersHelper')
-checkBrowsers(paths.appPath, isInteractive)
-  .then(() => {
-    // First, read the current file sizes in build directory.
-    // This lets us display how much they changed later.
-    return measureFileSizesBeforeBuild(paths.appBuild)
-  })
+// First, read the current file sizes in build directory.
+// This lets us display how much they changed later.
+measureFileSizesBeforeBuild(paths.appBuildPublic)
   .then(previousFileSizes => {
     // Remove all content but keep the directory so that
     // if you're in it, you don't end up in Trash
-    fs.emptyDirSync(paths.appBuild)
+    fs.emptyDirSync(paths.appBuild);
+
     // Merge with the public folder
-    copyPublicFolder()
+    copyPublicFolder();
+
     // Start the webpack build
-    return build(previousFileSizes)
+    return build(previousFileSizes);
   })
   .then(
     ({ stats, previousFileSizes, warnings }) => {
       if (warnings.length) {
-        console.log(chalk.yellow('Compiled with warnings.\n'))
-        console.log(warnings.join('\n\n'))
+        console.log(chalk.yellow('Compiled with warnings.\n'));
+        console.log(warnings.join('\n\n'));
         console.log(
           '\nSearch for the ' +
           chalk.underline(chalk.yellow('keywords')) +
-          ' to learn more about each warning.',
-        )
+          ' to learn more about each warning.'
+        );
         console.log(
           'To ignore, add ' +
           chalk.cyan('// eslint-disable-next-line') +
-          ' to the line before.\n',
-        )
+          ' to the line before.\n'
+        );
       } else {
-        console.log(chalk.green('Compiled successfully.\n'))
+        console.log(chalk.green('Compiled successfully.\n'));
       }
-
-      console.log('File sizes after gzip:\n')
-      printFileSizesAfterBuild(
-        stats,
-        previousFileSizes,
-        paths.appBuild,
-        WARN_AFTER_BUNDLE_GZIP_SIZE,
-        WARN_AFTER_CHUNK_GZIP_SIZE,
-      )
-      console.log()
-
-      const appPackage = require(paths.appPackageJson)
-      const publicUrl = paths.publicUrl
-      const publicPath = config.output.publicPath
-      const buildFolder = path.relative(process.cwd(), paths.appBuild)
-      printHostingInstructions(
-        appPackage,
-        publicUrl,
-        publicPath,
-        buildFolder,
-        useYarn,
-      )
+      console.log('File sizes after gzip:\n');
+      printFileSizesAfterBuild(stats, previousFileSizes, paths.appBuild);
+      console.log();
     },
     err => {
-      const tscCompileOnError = process.env.TSC_COMPILE_ON_ERROR === 'true'
-      if (tscCompileOnError) {
-        console.log(
-          chalk.yellow(
-            'Compiled with the following type errors (you may want to check these before deploying your app):\n',
-          ),
-        )
-        printBuildError(err)
-      } else {
-        console.log(chalk.red('Failed to compile.\n'))
-        printBuildError(err)
-        process.exit(1)
-      }
-    },
-  )
-  .catch(err => {
-    if (err && err.message) {
-      console.log(err.message)
+      console.log(chalk.red('Failed to compile.\n'));
+      console.log((err.message || err) + '\n');
+      process.exit(1);
     }
-    process.exit(1)
-  })
+  );
 
-// Create the production build and print the deployment instructions.
 function build(previousFileSizes) {
-  // We used to support resolving modules according to `NODE_PATH`.
-  // This now has been deprecated in favor of jsconfig/tsconfig.json
-  // This lets you use absolute paths in imports inside large monorepos:
-  if (process.env.NODE_PATH) {
-    console.log(
-      chalk.yellow(
-        'Setting NODE_PATH to resolve modules absolutely has been deprecated in favor of setting baseUrl in jsconfig.json (or tsconfig.json if you are using TypeScript) and will be removed in a future major release of create-react-app.',
-      ),
-    )
-    console.log()
+  // Check if razzle.config.js exists
+  let razzle = {};
+  try {
+    razzle = require(paths.appRazzleConfig);
+    /* eslint-disable no-empty */
+  } catch (e) {}
+  /* eslint-enable */
+
+  if (razzle.clearConsole === false || !!razzle.host || !!razzle.port) {
+    logger.warn(`Specifying options \`port\`, \`host\`, and \`clearConsole\` in razzle.config.js has been deprecated. 
+Please use a .env file instead.
+${razzle.host !== 'localhost' && `HOST=${razzle.host}`}
+${razzle.port !== '3000' && `PORT=${razzle.port}`}
+`);
   }
 
-  console.log('Creating an optimized production build...')
+  // Create our production webpack configurations and pass in razzle options.
+  let clientConfig = createConfig('web', 'prod', razzle, webpack);
+  let serverConfig = createConfig('node', 'prod', razzle, webpack);
 
-  const compiler = webpack(config)
+  process.noDeprecation = true; // turns off that loadQuery clutter.
+
+  console.log('Creating an optimized production build...');
+  console.log('Compiling client...');
+  // First compile the client. We need it to properly output assets.json (asset
+  // manifest file with the correct hashes on file names BEFORE we can start
+  // the server compiler.
   return new Promise((resolve, reject) => {
-    compiler.run((err, stats) => {
-      let messages
+    compile(clientConfig, (err, clientStats) => {
       if (err) {
-        if (!err.message) {
-          return reject(err)
-        }
-
-        let errMessage = err.message
-
-        // Add additional information for postcss errors
-        if (Object.prototype.hasOwnProperty.call(err, 'postcssNode')) {
-          errMessage +=
-            '\nCompileError: Begins at CSS selector ' +
-            err['postcssNode'].selector
-        }
-
-        messages = formatWebpackMessages({
-          errors: [errMessage],
-          warnings: [],
-        })
-      } else {
-        messages = formatWebpackMessages(
-          stats.toJson({ all: false, warnings: true, errors: true }),
-        )
+        reject(err);
       }
-      if (messages.errors.length) {
-        // Only keep the first error. Others are often indicative
-        // of the same problem, but confuse the reader with noise.
-        if (messages.errors.length > 1) {
-          messages.errors.length = 1
-        }
-        return reject(new Error(messages.errors.join('\n\n')))
+      const clientMessages = formatWebpackMessages(
+        clientStats.toJson({}, true)
+      );
+      if (clientMessages.errors.length) {
+        return reject(new Error(clientMessages.errors.join('\n\n')));
       }
       if (
         process.env.CI &&
         (typeof process.env.CI !== 'string' ||
           process.env.CI.toLowerCase() !== 'false') &&
-        messages.warnings.length
+        clientMessages.warnings.length
       ) {
         console.log(
           chalk.yellow(
             '\nTreating warnings as errors because process.env.CI = true.\n' +
-            'Most CI servers set it automatically.\n',
-          ),
-        )
-        return reject(new Error(messages.warnings.join('\n\n')))
+            'Most CI servers set it automatically.\n'
+          )
+        );
+        return reject(new Error(clientMessages.warnings.join('\n\n')));
       }
 
-      return resolve({
-        stats,
-        previousFileSizes,
-        warnings: messages.warnings,
-      })
-    })
-  })
+      console.log(chalk.green('Compiled client successfully.'));
+      console.log('Compiling server...');
+      compile(serverConfig, (err, serverStats) => {
+        if (err) {
+          reject(err);
+        }
+        const serverMessages = formatWebpackMessages(
+          serverStats.toJson({}, true)
+        );
+        if (serverMessages.errors.length) {
+          return reject(new Error(serverMessages.errors.join('\n\n')));
+        }
+        if (
+          process.env.CI &&
+          (typeof process.env.CI !== 'string' ||
+            process.env.CI.toLowerCase() !== 'false') &&
+          serverMessages.warnings.length
+        ) {
+          console.log(
+            chalk.yellow(
+              '\nTreating warnings as errors because process.env.CI = true.\n' +
+              'Most CI servers set it automatically.\n'
+            )
+          );
+          return reject(new Error(serverMessages.warnings.join('\n\n')));
+        }
+        console.log(chalk.green('Compiled server successfully.'));
+        return resolve({
+          stats: clientStats,
+          previousFileSizes,
+          warnings: Object.assign(
+            {},
+            clientMessages.warnings,
+            serverMessages.warnings
+          ),
+        });
+      });
+    });
+  });
 }
 
+// Helper function to copy public directory to build/public
 function copyPublicFolder() {
-  fs.copySync(paths.appPublic, paths.appBuild, {
+  fs.copySync(paths.appPublic, paths.appBuildPublic, {
     dereference: true,
     filter: file => file !== paths.appHtml,
-  })
+  });
+}
+
+// Wrap webpack compile in a try catch.
+function compile(config, cb) {
+  let compiler;
+  try {
+    compiler = webpack(config);
+  } catch (e) {
+    printErrors('Failed to compile.', [e]);
+    process.exit(1);
+  }
+  compiler.run((err, stats) => {
+    cb(err, stats);
+  });
 }

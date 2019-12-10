@@ -1,12 +1,10 @@
-'use strict';
-
 const preset = {
   presets: [
     [require.resolve('@babel/preset-env'), { modules: false }],
     require.resolve('@babel/preset-react'),
   ],
   plugins: [
-    require.resolve('react-loadable/babel'),
+    // require.resolve('react-loadable/babel'),
 
     // class { handleThing = () => { } }
     require.resolve('@babel/plugin-proposal-class-properties'),
@@ -25,9 +23,9 @@ const preset = {
     // Add support for async/await
     require.resolve('@babel/plugin-transform-runtime'),
   ],
-};
+}
 
-const env = process.env.BABEL_ENV || process.env.NODE_ENV;
+const env = process.env.BABEL_ENV || process.env.NODE_ENV
 
 if (env !== 'development' && env !== 'test' && env !== 'production') {
   throw new Error(
@@ -35,15 +33,15 @@ if (env !== 'development' && env !== 'test' && env !== 'production') {
     '`BABEL_ENV` environment variables. Valid values are "development", ' +
     '"test", and "production". Instead, received: ' +
     JSON.stringify(env) +
-    '.'
-  );
+    '.',
+  )
 }
 
 if (env === 'development' || env === 'test') {
   preset.plugins.push.apply(preset.plugins, [
     // Adds component stack to warning messages
     require.resolve('@babel/plugin-transform-react-jsx-source'),
-  ]);
+  ])
 }
 
 if (env === 'test') {
@@ -55,13 +53,13 @@ if (env === 'test') {
       require.resolve('@babel/plugin-transform-modules-commonjs'),
       { loose: true },
     ],
-  ]);
+  ])
 }
 
 if (env === 'production') {
   preset.plugins.push.apply(preset.plugins, [
     require.resolve('babel-plugin-transform-react-remove-prop-types'),
-  ]);
+  ])
 }
 
-module.exports = () => preset;
+module.exports = () => preset
