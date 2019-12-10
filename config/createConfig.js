@@ -409,7 +409,7 @@ module.exports = (
       // Setup Webpack Dev Server on port 3001 and
       // specify our client entry point /client/index.js
       config.entry = {
-        client: [
+        bundle: [
           require.resolve('razzle-dev-utils/webpackHotDevClient'),
           paths.appClientIndexJs,
         ],
@@ -510,6 +510,36 @@ module.exports = (
       ]
 
       config.optimization = {
+        removeAvailableModules: true,
+        noEmitOnErrors: true,
+        checkWasmTypes: false,
+        nodeEnv: false,
+        moduleIds: 'hashed',
+        usedExports: true,
+
+        runtimeChunk: {
+          name: 'runtime',
+        },
+
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            default: false,
+            vendors: false,
+            commons: {
+              name: 'commons',
+              chunks: 'all',
+              minChunks: 3,
+              reuseExistingChunk: true,
+            },
+            react: {
+              name: 'commons',
+              chunks: 'all',
+              test: /[\\/]node_modules[\\/](react|react-dom|scheduler|react-loadable)[\\/]/,
+            },
+          }
+        },
+
         minimize: true,
         minimizer: [
           new TerserPlugin({
