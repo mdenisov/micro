@@ -2,10 +2,30 @@ const path = require('path')
 const fs = require('fs')
 const url = require('url')
 
-// Make sure any symlinks in the project folder are resolved:
-// https://github.com/facebookincubator/create-react-app/issues/637
+const moduleFileExtensions = [
+  'mjs',
+  'ts',
+  'tsx',
+  'js',
+  'jsx',
+  'json',
+]
+
 const appDirectory = fs.realpathSync(process.cwd())
 const resolveApp = relativePath => path.resolve(appDirectory, relativePath)
+
+// Resolve file paths in the same order as webpack
+const resolveModule = (resolveFn, filePath) => {
+  const extension = moduleFileExtensions.find(extension =>
+    fs.existsSync(resolveFn(`${filePath}.${extension}`))
+  )
+
+  if (extension) {
+    return resolveFn(`${filePath}.${extension}`)
+  }
+
+  return resolveFn(`${filePath}.js`)
+}
 
 const envPublicUrl = process.env.PUBLIC_URL
 
@@ -25,8 +45,7 @@ const getPublicUrl = appPackageJson =>
 
 function getServedPath(appPackageJson) {
   const publicUrl = getPublicUrl(appPackageJson)
-  const servedUrl =
-    envPublicUrl || (publicUrl ? url.parse(publicUrl).pathname : '/')
+  const servedUrl = envPublicUrl || (publicUrl ? url.parse(publicUrl).pathname : '/')
   return ensureSlash(servedUrl, true)
 }
 
@@ -38,36 +57,23 @@ const nodePaths = (process.env.NODE_PATH || '')
   .filter(folder => !path.isAbsolute(folder))
   .map(resolveApp)
 
-const moduleFileExtensions = [
-  'web.mjs',
-  'mjs',
-  'web.js',
-  'js',
-  'web.ts',
-  'ts',
-  'web.tsx',
-  'tsx',
-  'json',
-  'web.jsx',
-  'jsx',
-]
-
 module.exports = {
   dotenv: resolveApp('.env'),
   appPath: resolveApp('.'),
   appBuild: resolveApp('build'),
   appBuildPublic: resolveApp('build/public'),
-  appManifest: resolveApp('build/assets.json'),
   appPublic: resolveApp('public'),
   appNodeModules: resolveApp('node_modules'),
   appSrc: resolveApp('src'),
-  appPackageJson: resolveApp('package.json'),
-  appServerIndexJs: resolveApp('src'),
-  appClientIndexJs: resolveApp('src/client'),
-  tsTestsSetup: resolveApp('src/setupTests.ts'),
-  jsTestsSetup: resolveApp('src/setupTests.js'),
-  appBabelRc: resolveApp('.babelrc'),
+
+  appManifest: resolveApp('build/assets.json'),
+  appBabelRc: resolveModule(resolveApp, '.babelrc'),
   appRazzleConfig: resolveApp('razzle.config.js'),
+  appTsConfig: resolveApp('tsconfig.json'),
+  appPackageJson: resolveApp('package.json'),
+  appServerIndexJs: resolveModule(resolveApp, 'src/index'),
+  appClientIndexJs: resolveModule(resolveApp, 'src/client'),
+
   nodePaths: nodePaths,
   ownPath: resolveOwn('.'),
   ownNodeModules: resolveOwn('node_modules'),

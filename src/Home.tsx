@@ -1,6 +1,7 @@
 import React from 'react'
 
 import './Home.css'
+// @ts-ignore
 import logo from './react.svg'
 
 function Home() {
