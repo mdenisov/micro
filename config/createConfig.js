@@ -374,22 +374,27 @@ module.exports = (
       config.entry.unshift('webpack/hot/poll?300')
 
       // Pretty format server errors
-      // config.entry.unshift('frontend-dev-utils/prettyNodeErrors')
-
-      const nodeArgs = ['-r', 'source-map-support/register']
+      // config.entry.unshift('razzle-dev-utils/prettyNodeErrors')
 
       config.plugins = [
         ...config.plugins,
         // Add hot module replacement
         new webpack.HotModuleReplacementPlugin(),
-        // Supress errors to console (we use our own logger)
+        // Run server
         new StartServerPlugin({
           name: 'server.js',
-          nodeArgs,
+          // nodeArgs: ['--inspect=9229'], // allow debugging
+          // args: [''], // pass args to script
+          signal: true, // signal to send for HMR (defaults to `false`, uses 'SIGUSR2' if `true`)
+          keyboard: true, // Allow typing 'rs' to restart the server. default: only if NODE_ENV is 'development'
         }),
         // Ignore assets.json to avoid infinite recompile bug
         new webpack.WatchIgnorePlugin([paths.appManifest]),
       ]
+    }
+
+    config.optimization = {
+      nodeEnv: false,
     }
   }
 
@@ -446,6 +451,7 @@ module.exports = (
       config.devServer = {
         disableHostCheck: true,
         clientLogLevel: 'none',
+        // color: false,
         // contentBase: paths.appBuild,
         // By default files from `contentBase` will not trigger a page reload.
         // watchContentBase: true,

@@ -80,7 +80,7 @@ setPorts()
     // Instatiate a variable to track server watching
     let watching
 
-    serverCompiler.hooks.done.tap('StartServerPlugin', () => {
+    serverCompiler.hooks.done.tap('done', () => {
       openBrowser(`http://localhost:${DEFAULT_PORT}`)
     })
 
@@ -93,7 +93,7 @@ setPorts()
       // Otherwise, create a new watcher for our server code.
       watching = serverCompiler.watch(
         {
-          quiet: false,
+          quiet: true,
           stats: 'none',
         },
         /* eslint-disable no-unused-vars */
@@ -115,8 +115,6 @@ setPorts()
       if (isInteractive) {
         clearConsole()
       }
-
-      // openBrowser(`http://localhost:${DEFAULT_PORT}`)
     });
 
     ['SIGINT', 'SIGTERM'].forEach(function (sig) {
