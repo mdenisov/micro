@@ -614,7 +614,7 @@ module.exports = (
     config.plugins = [
       ...config.plugins,
       new WebpackBar({
-        color: target === 'web' ? '#f56be2' : '#c065f4',
+        color: target === 'web' ? '#6be2f5' : '#e2f56b',
         name: target === 'web' ? 'client' : 'server',
       }),
     ]
