@@ -31,6 +31,7 @@ const envPublicUrl = process.env.PUBLIC_URL
 
 function ensureSlash(path, needsSlash) {
   const hasSlash = path.endsWith('/')
+
   if (hasSlash && !needsSlash) {
     return path.substr(path, path.length - 1)
   } else if (!hasSlash && needsSlash) {
@@ -46,6 +47,7 @@ const getPublicUrl = appPackageJson =>
 function getServedPath(appPackageJson) {
   const publicUrl = getPublicUrl(appPackageJson)
   const servedUrl = envPublicUrl || (publicUrl ? url.parse(publicUrl).pathname : '/')
+
   return ensureSlash(servedUrl, true)
 }
 
