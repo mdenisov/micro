@@ -12,7 +12,6 @@ process.on('unhandledRejection', err => {
 const chalk = require('react-dev-utils/chalk')
 const openBrowser = require('react-dev-utils/openBrowser')
 const clearConsole = require('react-dev-utils/clearConsole')
-const setPorts = require('razzle-dev-utils/setPorts')
 
 const fs = require('fs-extra')
 const webpack = require('webpack')
@@ -20,6 +19,7 @@ const WebpackDevServer = require('webpack-dev-server')
 
 const paths = require('../config/paths')
 const configFactory = require('../config/createConfig')
+const setPorts = require('../utils/setPorts')
 
 process.noDeprecation = true // turns off that loadQuery clutter.
 
@@ -53,25 +53,25 @@ setPorts()
     console.log(
       chalk.cyan('Compiling...'),
     )
-    let razzle = {}
+    let frontendConfig = {}
 
-    // Check for razzle.config.js file
-    if (fs.existsSync(paths.appRazzleConfig)) {
+    // Check for frontend.config.js file
+    if (fs.existsSync(paths.appFrontendConfig)) {
       try {
-        razzle = require(paths.appRazzleConfig)
+        frontendConfig = require(paths.appFrontendConfig)
       } catch (err) {
         clearConsole()
         console.log(
-          chalk.cyan('Invalid razzle.config.js file.'),
+          chalk.cyan('Invalid frontend.config.js file.'),
           err,
         )
         process.exit(1)
       }
     }
 
-    // Create dev configs using our config factory, passing in razzle file as options.
-    const clientConfig = configFactory('web', 'dev', razzle, webpack)
-    const serverConfig = configFactory('node', 'dev', razzle, webpack)
+    // Create dev configs using our config factory, passing in frontend file as options.
+    const clientConfig = configFactory('web', 'dev', frontendConfig, webpack)
+    const serverConfig = configFactory('node', 'dev', frontendConfig, webpack)
 
     // Compile our assets with webpack
     const clientCompiler = compile(clientConfig)
@@ -79,6 +79,10 @@ setPorts()
 
     // Instatiate a variable to track server watching
     let watching
+
+    serverCompiler.hooks.done.tap('StartServerPlugin', () => {
+      openBrowser(`http://localhost:${DEFAULT_PORT}`)
+    })
 
     // Start our server webpack instance in watch mode after assets compile
     clientCompiler.plugin('done', () => {
@@ -112,7 +116,7 @@ setPorts()
         clearConsole()
       }
 
-      openBrowser(`http://localhost:${DEFAULT_PORT}`)
+      // openBrowser(`http://localhost:${DEFAULT_PORT}`)
     });
 
     ['SIGINT', 'SIGTERM'].forEach(function (sig) {

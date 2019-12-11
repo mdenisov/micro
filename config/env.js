@@ -47,13 +47,13 @@ const nodePath = (process.env.NODE_PATH || '')
   .map(folder => path.resolve(appDirectory, folder))
   .join(path.delimiter)
 
-// Grab NODE_ENV and RAZZLE_* environment variables and prepare them to be
+// Grab NODE_ENV and FRONTEND* environment variables and prepare them to be
 // injected into the application via DefinePlugin in Webpack configuration.
-const RAZZLE = /^RAZZLE_/i
+const FRONTEND = /^FRONTEND_/i
 
 function getClientEnvironment(target, options) {
   const raw = Object.keys(process.env)
-    .filter(key => RAZZLE.test(key))
+    .filter(key => FRONTEND.test(key))
     .reduce(
       (env, key) => {
         env[key] = process.env[key]
@@ -66,7 +66,7 @@ function getClientEnvironment(target, options) {
         PORT: process.env.PORT || options.port || 3000,
         VERBOSE: !!process.env.VERBOSE,
         HOST: process.env.HOST || options.host || 'localhost',
-        RAZZLE_ASSETS_MANIFEST: paths.appManifest,
+        ASSETS_MANIFEST: process.env.ASSETS_MANIFEST || paths.appManifest,
         BUILD_TARGET: target === 'web' ? 'client' : 'server',
         // only for production builds. Useful if you need to serve from a CDN
         PUBLIC_PATH: process.env.PUBLIC_PATH || '/',
@@ -75,10 +75,9 @@ function getClientEnvironment(target, options) {
         CLIENT_PUBLIC_PATH: process.env.CLIENT_PUBLIC_PATH,
         // The public dir changes between dev and prod, so we use an environment
         // variable available to users.
-        RAZZLE_PUBLIC_DIR:
-          process.env.NODE_ENV === 'production'
-            ? paths.appBuildPublic
-            : paths.appPublic,
+        PUBLIC_DIR: process.env.PUBLIC_DIR || process.env.NODE_ENV === 'production'
+          ? paths.appBuildPublic
+          : paths.appPublic,
       },
     )
   // Stringify all values so we can feed into Webpack DefinePlugin

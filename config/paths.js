@@ -70,7 +70,7 @@ module.exports = {
 
   appManifest: resolveApp('build/assets.json'),
   appBabelRc: resolveModule(resolveApp, '.babelrc'),
-  appRazzleConfig: resolveApp('razzle.config.js'),
+  appFrontendConfig: resolveApp('frontend.config.js'),
   appTsConfig: resolveApp('tsconfig.json'),
   appPackageJson: resolveApp('package.json'),
   appServerIndexJs: resolveModule(resolveApp, 'src/index'),

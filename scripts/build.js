@@ -72,17 +72,18 @@ measureFileSizesBeforeBuild(paths.appBuildPublic)
   )
 
 function build(previousFileSizes) {
-  // Check if razzle.config.js exists
-  let razzle = {}
+  // Check if frontend.config.js exists
+  let frontendConfig = {}
+
   try {
-    razzle = require(paths.appRazzleConfig)
+    frontendConfig = require(paths.appFrontendConfig)
   } catch (e) {}
 
   clearConsole()
 
-  // Create our production webpack configurations and pass in razzle options.
-  const clientConfig = configFactory('web', 'prod', razzle, webpack)
-  const serverConfig = configFactory('node', 'prod', razzle, webpack)
+  // Create our production webpack configurations and pass in frontend options.
+  const clientConfig = configFactory('web', 'prod', frontendConfig, webpack)
+  const serverConfig = configFactory('node', 'prod', frontendConfig, webpack)
 
   process.noDeprecation = true // turns off that loadQuery clutter.
 

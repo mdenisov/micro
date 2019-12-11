@@ -16,8 +16,8 @@ const evalSourceMapMiddleware = require('react-dev-utils/evalSourceMapMiddleware
 const ForkTsCheckerWebpackPlugin = require('react-dev-utils/ForkTsCheckerWebpackPlugin')
 const typescriptFormatter = require('react-dev-utils/typescriptFormatter')
 
+const runPlugin = require('../utils/runPlugin')
 const paths = require('./paths')
-const runPlugin = require('./runPlugin')
 const { getClientEnv, nodePath } = require('./env')
 
 // Check if TypeScript is setup
@@ -55,7 +55,7 @@ module.exports = (
   webpackObject,
 ) => {
   // First we check to see if the user has a custom .babelrc file, otherwise
-  // we just use babel-preset-razzle.
+  // we just use babel-preset-frontend.
   const hasBabelRc = fs.existsSync(paths.appBabelRc)
   const mainBabelOptions = {
     babelrc: true,
@@ -102,7 +102,7 @@ module.exports = (
     target: target,
     // Controversially, decide on sourcemaps.
     devtool: IS_DEV ? 'cheap-module-source-map' : 'source-map',
-    // We need to tell webpack how to resolve both Razzle's node_modules and
+    // We need to tell webpack how to resolve both frontend's node_modules and
     // the users', so we use resolve and resolveLoader.
     stats: false,
     resolve: {
@@ -374,7 +374,7 @@ module.exports = (
       config.entry.unshift('webpack/hot/poll?300')
 
       // Pretty format server errors
-      config.entry.unshift('razzle-dev-utils/prettyNodeErrors')
+      // config.entry.unshift('frontend-dev-utils/prettyNodeErrors')
 
       const nodeArgs = ['-r', 'source-map-support/register']
 
@@ -425,7 +425,7 @@ module.exports = (
       // specify our client entry point /client/index.js
       config.entry = {
         bundle: [
-          require.resolve('razzle-dev-utils/webpackHotDevClient'),
+          require.resolve('../utils/webpackHotDevClient'),
           paths.appClientIndexJs,
         ],
       }
@@ -629,7 +629,7 @@ module.exports = (
     ]
   }
 
-  // Apply razzle plugins, if they are present in razzle.config.js
+  // Apply plugins, if they are present in frontend.config.js
   if (Array.isArray(plugins)) {
     plugins.forEach(plugin => {
       config = runPlugin(
@@ -641,7 +641,7 @@ module.exports = (
     })
   }
 
-  // Check if razzle.config has a modify function. If it does, call it on the
+  // Check if frontend.config has a modify function. If it does, call it on the
   // configs we created.
   if (modify) {
     config = modify(config, { target, dev: IS_DEV }, webpackObject)

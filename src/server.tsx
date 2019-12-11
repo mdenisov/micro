@@ -6,11 +6,11 @@ import { renderToString } from 'react-dom/server'
 
 import App from './App'
 
-const assets = require(process.env.RAZZLE_ASSETS_MANIFEST as string)
+const assets = require(process.env.ASSETS_MANIFEST as string)
 
 const server = new Koa()
 
-server.use(serve(process.env.RAZZLE_PUBLIC_DIR as string))
+server.use(serve(process.env.PUBLIC_DIR as string))
 server.use((ctx: Koa.Context) => {
   const context: { url?: string } = {}
   const markup = renderToString(
