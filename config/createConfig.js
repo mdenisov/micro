@@ -385,8 +385,8 @@ module.exports = (
           name: 'server.js',
           // nodeArgs: ['--inspect=9229'], // allow debugging
           // args: [''], // pass args to script
-          signal: true, // signal to send for HMR (defaults to `false`, uses 'SIGUSR2' if `true`)
-          keyboard: true, // Allow typing 'rs' to restart the server. default: only if NODE_ENV is 'development'
+          // signal: true, // signal to send for HMR (defaults to `false`, uses 'SIGUSR2' if `true`)
+          // keyboard: true, // Allow typing 'rs' to restart the server. default: only if NODE_ENV is 'development'
         }),
         // Ignore assets.json to avoid infinite recompile bug
         new webpack.WatchIgnorePlugin([paths.appManifest]),

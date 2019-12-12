@@ -10,6 +10,13 @@ const assets = require(process.env.ASSETS_MANIFEST as string)
 
 const server = new Koa()
 
+server.use(async (ctx: Koa.Context, next: () => Promise<any>) => {
+  const start = Date.now()
+
+  await next()
+
+  console.log('REQUEST', ctx.method, ctx.url, ctx.status, Date.now() - start, 'ms')
+})
 server.use(serve(process.env.PUBLIC_DIR as string))
 server.use((ctx: Koa.Context) => {
   const context: { url?: string } = {}
