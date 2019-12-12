@@ -2,15 +2,12 @@ import * as http from 'http'
 
 import app from './server'
 
-// Use `app#callback()` method here instead of directly
-// passing `app` as an argument to `createServer` (or use `app#listen()` instead)
-// @see https://github.com/koajs/koa/blob/master/docs/api/index.md#appcallback
 let currentHandler = app.callback()
 const server = http.createServer(currentHandler)
 
 server
   .listen(process.env.PORT || 3000, () => {
-    console.log('🚀  Started')
+    console.log('🚀  Started\n')
   })
   .on('error', error => {
     console.log(error)

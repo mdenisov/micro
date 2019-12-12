@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@babel/code-frame": "^7.5.5",
     "@babel/core": "^7.7.5",
     "@babel/plugin-proposal-class-properties": "^7.7.4",
     "@babel/plugin-proposal-object-rest-spread": "^7.7.4",
@@ -36,6 +37,7 @@
     "eslint-plugin-standard": "^4.0.1",
     "file-loader": "^5.0.2",
     "fs-extra": "^8.1.0",
+    "jest-message-util": "^24.9.0",
     "koa": "^2.11.0",
     "koa-static": "^5.0.0",
     "mini-css-extract-plugin": "^0.8.0",
