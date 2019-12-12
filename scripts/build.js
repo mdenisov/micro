@@ -23,7 +23,7 @@ const webpack = require('webpack')
 const fs = require('fs-extra')
 
 const paths = require('../config/paths')
-const configFactory = require('../config/createConfig')
+const configFactory = require('../config/configFactory')
 
 const measureFileSizesBeforeBuild = FileSizeReporter.measureFileSizesBeforeBuild
 const printFileSizesAfterBuild = FileSizeReporter.printFileSizesAfterBuild

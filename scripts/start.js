@@ -18,7 +18,7 @@ const webpack = require('webpack')
 const WebpackDevServer = require('webpack-dev-server')
 
 const paths = require('../config/paths')
-const configFactory = require('../config/createConfig')
+const configFactory = require('../config/configFactory')
 const setPorts = require('../utils/setPorts')
 
 process.noDeprecation = true // turns off that loadQuery clutter.
