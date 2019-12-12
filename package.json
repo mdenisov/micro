@@ -1,12 +1,11 @@
 {
   "name": "frontend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "description": "Create server-rendered universal JavaScript applications with no configuration",
+  "bin": {
+    "frontend": "./bin/frontend.js"
   },
-  "author": "",
+  "author": "Maxim Denisov <maxim.denisov@sravni.ru>",
   "license": "ISC",
   "dependencies": {
     "@babel/code-frame": "^7.5.5",
