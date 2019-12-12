@@ -10,6 +10,7 @@ const safePostCssParser = require('postcss-safe-parser')
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const WebpackBar = require('webpackbar')
 const eslint = require('eslint')
+const postcssNormalize = require('postcss-normalize')
 
 const errorOverlayMiddleware = require('react-dev-utils/errorOverlayMiddleware')
 const evalSourceMapMiddleware = require('react-dev-utils/evalSourceMapMiddleware')
@@ -37,6 +38,7 @@ const postCssOptions = {
       },
       stage: 3,
     }),
+    postcssNormalize()
   ],
 }
 
@@ -619,6 +621,9 @@ module.exports = (
                 annotation: true,
               },
             },
+            cssProcessorPluginOptions: {
+              preset: ['default', { minifyFontValues: { removeQuotes: false } }]
+            }
           }),
         ],
       }
