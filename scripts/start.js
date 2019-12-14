@@ -93,9 +93,7 @@ setPorts()
           quiet: true,
           stats: 'none',
         },
-        stats => {
-          console.log('3')
-        },
+        stats => {},
       )
 
       pingServer(`http://localhost:${DEFAULT_PORT}`)
