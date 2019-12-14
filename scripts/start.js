@@ -20,6 +20,7 @@ const WebpackDevServer = require('webpack-dev-server')
 const paths = require('../config/paths')
 const configFactory = require('../config/configFactory')
 const setPorts = require('../utils/setPorts')
+const pingServer = require('../utils/pingServer')
 
 process.noDeprecation = true // turns off that loadQuery clutter.
 
@@ -80,10 +81,6 @@ setPorts()
     // Instatiate a variable to track server watching
     let watching
 
-    serverCompiler.hooks.done.tap('done', () => {
-      openBrowser(`http://localhost:${DEFAULT_PORT}`)
-    })
-
     // Start our server webpack instance in watch mode after assets compile
     clientCompiler.plugin('done', () => {
       // If we've already started the server watcher, bail early.
@@ -96,10 +93,13 @@ setPorts()
           quiet: true,
           stats: 'none',
         },
-        /* eslint-disable no-unused-vars */
         stats => {
+          console.log('3')
         },
       )
+
+      pingServer(`http://localhost:${DEFAULT_PORT}`)
+        .then(() => openBrowser(`http://localhost:${DEFAULT_PORT}`))
     })
 
     // Create a new instance of Webpack-dev-server for our client assets.
