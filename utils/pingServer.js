@@ -2,18 +2,12 @@ const http = require('http')
 
 function request(url) {
   return new Promise((resolve, reject) => {
-    http.get(url, (resp) => {
-      let data = ''
+    http.get(url, (res) => {
+      const { statusCode } = res
 
-      // A chunk of data has been recieved.
-      resp.on('data', (chunk) => {
-        data += chunk
-      })
-
-      // The whole response has been received. Print out the result.
-      resp.on('end', () => {
+      if (statusCode === 200) {
         resolve(true)
-      })
+      }
     }).on('error', (err) => {
       reject(err)
     })
@@ -36,6 +30,8 @@ async function pingServer(url, retry = 5) {
 
     if (succeed) return
   }
+
+  throw new Error('Server is not available')
 }
 
 module.exports = pingServer

@@ -98,6 +98,15 @@ setPorts()
 
       pingServer(`http://localhost:${DEFAULT_PORT}`)
         .then(() => openBrowser(`http://localhost:${DEFAULT_PORT}`))
+        .catch((err) => {
+          console.log()
+          console.log(
+            chalk.cyan('Failed to start server.'),
+            err,
+          )
+          console.log()
+          process.exit(1)
+        })
     })
 
     // Create a new instance of Webpack-dev-server for our client assets.
@@ -122,9 +131,10 @@ setPorts()
       })
     })
   })
-  .catch(err => {
+  .catch((err) => {
     if (err && err.message) {
       console.log(err.message)
     }
+
     process.exit(1)
   })
