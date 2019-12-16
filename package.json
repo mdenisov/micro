@@ -72,5 +72,12 @@
     "react-router-dom": "^5.1.2",
     "typescript": "^3.7.3"
   },
-  "browserslist": "last 2 versions"
+  "browserslist": [
+    "last 2 version",
+    "> 1%",
+    "IE 11"
+  ],
+  "engines": {
+    "node" : ">=12.0.0"
+  }
 }

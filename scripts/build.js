@@ -60,6 +60,7 @@ measureFileSizesBeforeBuild(paths.appBuildPublic)
       } else {
         console.log(chalk.green('Compiled successfully.\n'))
       }
+
       console.log('File sizes after gzip:\n')
       printFileSizesAfterBuild(stats, previousFileSizes, paths.appBuild)
       console.log()
@@ -168,7 +169,11 @@ function compile(config, cb) {
   try {
     compiler = webpack(config)
   } catch (err) {
-    console.log(err.message)
+    clearConsole()
+    console.log(
+      chalk.cyan('Failed to compile.'),
+      err,
+    )
     process.exit(1)
   }
 

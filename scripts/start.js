@@ -133,7 +133,7 @@ setPorts()
   .catch((err) => {
     clearConsole()
     console.log(
-      chalk.cyan('Failed to build assets.'),
+      chalk.cyan('Failed to compile.'),
       err,
     )
     process.exit(1)
