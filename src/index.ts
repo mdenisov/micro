@@ -5,15 +5,14 @@ import app from './server'
 let currentHandler = app.callback()
 const server = http.createServer(currentHandler)
 
-setTimeout(() =>
-  server
-    .listen(process.env.PORT || 3000, () => {
-      console.log('🚀  Started\n')
-    })
-    .on('error', error => {
-      console.log(error)
-    })
-, 5000)
+server
+  .listen(process.env.PORT || 3000, () => {
+    console.log('🚀  Started\n')
+  })
+  .on('error', error => {
+    console.log(error)
+  })
+
 if (module.hot) {
   console.log('✅  Server-side HMR Enabled!')
 

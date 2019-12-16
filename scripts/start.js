@@ -24,11 +24,10 @@ const pingServer = require('../utils/pingServer')
 
 process.noDeprecation = true // turns off that loadQuery clutter.
 
-const isInteractive = process.stdout.isTTY
-
 // Tools like Cloud9 rely on this.
 const DEFAULT_PORT = parseInt(process.env.PORT, 10) || 3000
 const HOST = process.env.HOST || '0.0.0.0'
+const URL = `http://localhost:${DEFAULT_PORT}`
 
 // Webpack compile in a try-catch
 function compile(config) {
@@ -96,15 +95,15 @@ setPorts()
         stats => {},
       )
 
-      pingServer(`http://localhost:${DEFAULT_PORT}`)
-        .then(() => openBrowser(`http://localhost:${DEFAULT_PORT}`))
+      // Start ping server for open browser
+      pingServer(URL)
+        .then(() => openBrowser(URL))
         .catch((err) => {
-          console.log()
+          clearConsole()
           console.log(
             chalk.cyan('Failed to start server.'),
             err,
           )
-          console.log()
           process.exit(1)
         })
     })
@@ -116,11 +115,11 @@ setPorts()
     // Launch WebpackDevServer.
     devServer.listen((DEFAULT_PORT + 1) || 3001, HOST, err => {
       if (err) {
-        return console.log(err)
-      }
-
-      if (isInteractive) {
         clearConsole()
+        return console.log(
+          chalk.cyan('Failed to start dev server.'),
+          err,
+        )
       }
     });
 
@@ -132,9 +131,10 @@ setPorts()
     })
   })
   .catch((err) => {
-    if (err && err.message) {
-      console.log(err.message)
-    }
-
+    clearConsole()
+    console.log(
+      chalk.cyan('Failed to build assets.'),
+      err,
+    )
     process.exit(1)
   })
