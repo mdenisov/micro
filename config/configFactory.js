@@ -652,8 +652,7 @@ module.exports = (
     })
   }
 
-  // Check if frontend.config has a modify function. If it does, call it on the
-  // configs we created.
+  // Check if frontend.config has a modify function. If it does, call it on the configs we created.
   if (modify) {
     config = modify(config, { target, dev: IS_DEV }, webpackObject)
   }

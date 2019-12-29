@@ -1,7 +1,37 @@
+const env = process.env.BABEL_ENV || process.env.NODE_ENV
+const isProduction = env === 'production'
+const isDevelopment = env === 'development'
+const isTest = env === 'test'
+
+const presetEnvConfig = {
+  // In the test environment `modules` is often needed to be set to true, babel figures that out by itself using the `'auto'` option
+  // In production/development this option is set to `false` so that webpack can handle import/export with tree-shaking
+  modules: 'auto',
+}
+const presetReactConfig = {
+  development: isDevelopment || isTest,
+}
+const presetTypescriptConfig = {
+  allowNamespaces: true
+}
+const pluginRuntimeConfig = {
+  corejs: 2,
+  helpers: true,
+  regenerator: true,
+}
+const pluginRestSpreadConfig = {
+  useBuiltIns: true,
+}
+const pluginCommonjsConfig = {
+  loose: true
+}
+
 const preset = {
+  sourceType: 'unambiguous',
   presets: [
-    [require.resolve('@babel/preset-env'), { modules: false }],
-    require.resolve('@babel/preset-react'),
+    [require.resolve('@babel/preset-env'), presetEnvConfig],
+    [require.resolve('@babel/preset-react'), presetReactConfig],
+    [require.resolve('@babel/preset-typescript'), presetTypescriptConfig],
   ],
   plugins: [
     // require.resolve('react-loadable/babel'),
@@ -11,21 +41,13 @@ const preset = {
 
     // The following two plugins use Object.assign directly, instead of Babel's
     // extends helper. Note that this assumes `Object.assign` is available.
-    // { ...todo, completed: true }
-    [
-      require.resolve('@babel/plugin-proposal-object-rest-spread'),
-      {
-        useBuiltIns: true,
-      },
-    ],
+    [require.resolve('@babel/plugin-proposal-object-rest-spread'), pluginRestSpreadConfig],
     // Adds syntax support for import()
     require.resolve('@babel/plugin-syntax-dynamic-import'),
     // Add support for async/await
-    require.resolve('@babel/plugin-transform-runtime'),
+    [require.resolve('@babel/plugin-transform-runtime'), pluginRuntimeConfig],
   ],
 }
-
-const env = process.env.BABEL_ENV || process.env.NODE_ENV
 
 if (env !== 'development' && env !== 'test' && env !== 'production') {
   throw new Error(
@@ -38,26 +60,23 @@ if (env !== 'development' && env !== 'test' && env !== 'production') {
 }
 
 if (env === 'development' || env === 'test') {
-  preset.plugins.push.apply(preset.plugins, [
+  preset.plugins.push([
     // Adds component stack to warning messages
     require.resolve('@babel/plugin-transform-react-jsx-source'),
   ])
 }
 
 if (env === 'test') {
-  preset.plugins.push.apply(preset.plugins, [
+  preset.plugins.push([
     // Compiles import() to a deferred require()
     require.resolve('babel-plugin-dynamic-import-node'),
     // Transform ES modules to commonjs for Jest support
-    [
-      require.resolve('@babel/plugin-transform-modules-commonjs'),
-      { loose: true },
-    ],
+    [require.resolve('@babel/plugin-transform-modules-commonjs'), pluginCommonjsConfig],
   ])
 }
 
 if (env === 'production') {
-  preset.plugins.push.apply(preset.plugins, [
+  preset.plugins.push([
     require.resolve('babel-plugin-transform-react-remove-prop-types'),
   ])
 }

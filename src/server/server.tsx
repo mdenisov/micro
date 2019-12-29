@@ -1,5 +1,6 @@
 import Koa from 'koa'
 import serve from 'koa-static'
+import compress from 'koa-compress'
 import React from 'react'
 import { StaticRouter } from 'react-router-dom'
 import { renderToString } from 'react-dom/server'
@@ -17,6 +18,7 @@ server.use(async (ctx: Koa.Context, next: () => Promise<any>) => {
 
   console.log('REQUEST', ctx.method, ctx.url, ctx.status, Date.now() - start, 'ms')
 })
+server.use(compress())
 server.use(serve(process.env.PUBLIC_DIR as string))
 server.use((ctx: Koa.Context) => {
   const context: { url?: string } = {}
@@ -44,8 +46,18 @@ ${
 }
 ${
   process.env.NODE_ENV === 'production'
-    ? `<script src="${assets.bundle.js}" defer></script>`
-    : `<script src="${assets.bundle.js}" defer crossorigin></script>`
+    ? `<script src="${assets.runtime.js}" async></script>`
+    : `<script src="${assets.runtime.js}" async crossorigin></script>`
+}
+${
+  process.env.NODE_ENV === 'production'
+    ? `<script src="${assets.commons.js}" async></script>`
+    : `<script src="${assets.commons.js}" async crossorigin></script>`
+}
+${
+  process.env.NODE_ENV === 'production'
+    ? `<script src="${assets.bundle.js}" async></script>`
+    : `<script src="${assets.bundle.js}" async crossorigin></script>`
 }
 </head>
 <body>
