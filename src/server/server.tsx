@@ -4,7 +4,7 @@ import React from 'react'
 import { StaticRouter } from 'react-router-dom'
 import { renderToString } from 'react-dom/server'
 
-import App from './App'
+import App from '../client/App'
 
 const assets = require(process.env.ASSETS_MANIFEST as string)
 

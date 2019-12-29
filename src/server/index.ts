@@ -20,7 +20,7 @@ if (module.hot) {
     console.log('🔁  HMR Reloading `./server`...')
 
     try {
-      const newHandler = require('./server').default.callback()
+      const newHandler = require('./').default.callback()
 
       server.removeListener('request', currentHandler)
       server.on('request', newHandler)

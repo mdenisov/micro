@@ -1,6 +1,6 @@
 const path = require('path')
 const fs = require('fs')
-const url = require('url')
+const URL = require('url')
 
 const moduleFileExtensions = [
   'mjs',
@@ -46,7 +46,7 @@ const getPublicUrl = appPackageJson =>
 
 function getServedPath(appPackageJson) {
   const publicUrl = getPublicUrl(appPackageJson)
-  const servedUrl = envPublicUrl || (publicUrl ? url.parse(publicUrl).pathname : '/')
+  const servedUrl = envPublicUrl || (publicUrl ? new URL(publicUrl).pathname : '/')
 
   return ensureSlash(servedUrl, true)
 }
@@ -73,8 +73,8 @@ module.exports = {
   appFrontendConfig: resolveApp('frontend.config.js'),
   appTsConfig: resolveApp('tsconfig.json'),
   appPackageJson: resolveApp('package.json'),
-  appServerIndexJs: resolveModule(resolveApp, 'src/index'),
-  appClientIndexJs: resolveModule(resolveApp, 'src/client'),
+  appServerIndexJs: resolveModule(resolveApp, 'src/server/index'),
+  appClientIndexJs: resolveModule(resolveApp, 'src/client/index'),
 
   nodePaths: nodePaths,
   ownPath: resolveOwn('.'),
