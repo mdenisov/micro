@@ -44,16 +44,7 @@ ${
     ? `<link rel="stylesheet" href="${assets.bundle.css}">`
     : ''
 }
-${
-  process.env.NODE_ENV === 'production'
-    ? `<script src="${assets.runtime.js}" async></script>`
-    : `<script src="${assets.runtime.js}" async crossorigin></script>`
-}
-${
-  process.env.NODE_ENV === 'production'
-    ? `<script src="${assets.commons.js}" async></script>`
-    : `<script src="${assets.commons.js}" async crossorigin></script>`
-}
+
 ${
   process.env.NODE_ENV === 'production'
     ? `<script src="${assets.bundle.js}" async></script>`
