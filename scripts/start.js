@@ -53,12 +53,12 @@ setPorts()
     console.log(
       chalk.cyan('Compiling...'),
     )
-    let frontendConfig = {}
+    let microConfig = {}
 
-    // Check for frontend.config.js file
+    // Check for micro.config.js file
     if (fs.existsSync(paths.appConfig)) {
       try {
-        frontendConfig = require(paths.appConfig)
+        microConfig = require(paths.appConfig)
       } catch (err) {
         clearConsole()
         console.log(
@@ -69,9 +69,9 @@ setPorts()
       }
     }
 
-    // Create dev configs using our config factory, passing in frontend file as options.
-    const clientConfig = configFactory('web', 'dev', frontendConfig, webpack)
-    const serverConfig = configFactory('node', 'dev', frontendConfig, webpack)
+    // Create dev configs using our config factory, passing in micro file as options.
+    const clientConfig = configFactory('web', 'dev', microConfig, webpack)
+    const serverConfig = configFactory('node', 'dev', microConfig, webpack)
 
     // Compile our assets with webpack
     const clientCompiler = compile(clientConfig)

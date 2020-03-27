@@ -37,7 +37,7 @@ server.use((ctx: Koa.Context) => {
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta charset="utf-8" />
-<title>Welcome to Frontend</title>
+<title>Welcome to Micro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 ${
   assets.bundle.css

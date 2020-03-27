@@ -48,13 +48,13 @@ const nodePath = (process.env.NODE_PATH || '')
   .map(folder => path.resolve(appDirectory, folder))
   .join(path.delimiter)
 
-// Grab NODE_ENV and FRONTEND* environment variables and prepare them to be
+// Grab NODE_ENV and MICRO* environment variables and prepare them to be
 // injected into the application via DefinePlugin in Webpack configuration.
-const FRONTEND = /^FRONTEND_/i
+const MICRO = /^MICRO_/i
 
 function getClientEnvironment(target, options) {
   const raw = Object.keys(process.env)
-    .filter(key => FRONTEND.test(key))
+    .filter(key => MICRO.test(key))
     .reduce(
       (env, key) => {
         env[key] = process.env[key]
@@ -72,7 +72,7 @@ function getClientEnvironment(target, options) {
         // only for production builds. Useful if you need to serve from a CDN
         PUBLIC_PATH: process.env.PUBLIC_PATH || '/',
         // CLIENT_PUBLIC_PATH is a PUBLIC_PATH for NODE_ENV === 'development' && BUILD_TARGET === 'client'
-        // It's useful if you're running razzle in a non-localhost container. Ends in a /
+        // It's useful if you're running micro in a non-localhost container. Ends in a /
         CLIENT_PUBLIC_PATH: process.env.CLIENT_PUBLIC_PATH,
         // The public dir changes between dev and prod, so we use an environment
         // variable available to users.

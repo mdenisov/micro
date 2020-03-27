@@ -73,18 +73,18 @@ measureFileSizesBeforeBuild(paths.appBuildPublic)
   )
 
 function build(previousFileSizes) {
-  // Check if frontend.config.js exists
-  let frontendConfig = {}
+  // Check if micro.config.js exists
+  let microConfig = {}
 
   try {
-    frontendConfig = require(paths.appConfig)
+    microConfig = require(paths.appConfig)
   } catch (e) {}
 
   clearConsole()
 
-  // Create our production webpack configurations and pass in frontend options.
-  const clientConfig = configFactory('web', 'prod', frontendConfig, webpack)
-  const serverConfig = configFactory('node', 'prod', frontendConfig, webpack)
+  // Create our production webpack configurations and pass in micro options.
+  const clientConfig = configFactory('web', 'prod', microConfig, webpack)
+  const serverConfig = configFactory('node', 'prod', microConfig, webpack)
 
   process.noDeprecation = true // turns off that loadQuery clutter.
 
