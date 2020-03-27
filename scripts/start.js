@@ -56,13 +56,13 @@ setPorts()
     let frontendConfig = {}
 
     // Check for frontend.config.js file
-    if (fs.existsSync(paths.appFrontendConfig)) {
+    if (fs.existsSync(paths.appConfig)) {
       try {
-        frontendConfig = require(paths.appFrontendConfig)
+        frontendConfig = require(paths.appConfig)
       } catch (err) {
         clearConsole()
         console.log(
-          chalk.cyan('Invalid frontend.config.js file.'),
+          chalk.cyan('Invalid micro.config.js file.'),
           err,
         )
         process.exit(1)

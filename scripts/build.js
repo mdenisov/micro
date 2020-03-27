@@ -77,7 +77,7 @@ function build(previousFileSizes) {
   let frontendConfig = {}
 
   try {
-    frontendConfig = require(paths.appFrontendConfig)
+    frontendConfig = require(paths.appConfig)
   } catch (e) {}
 
   clearConsole()

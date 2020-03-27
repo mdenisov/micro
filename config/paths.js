@@ -68,9 +68,11 @@ module.exports = {
   appNodeModules: resolveApp('node_modules'),
   appSrc: resolveApp('src'),
 
+  tsTestsSetup: resolveApp('src/setupTests.ts'),
+  jsTestsSetup: resolveApp('src/setupTests.js'),
   appManifest: resolveApp('build/assets.json'),
   appBabelRc: resolveModule(resolveApp, '.babelrc'),
-  appFrontendConfig: resolveApp('frontend.config.js'),
+  appConfig: resolveApp('micro.config.js'),
   appTsConfig: resolveApp('tsconfig.json'),
   appPackageJson: resolveApp('package.json'),
   appServerIndexJs: resolveModule(resolveApp, 'src/server/index'),

@@ -2,18 +2,21 @@
 'use strict'
 
 const spawn = require('react-dev-utils/crossSpawn')
+
 const script = process.argv[2]
 const args = process.argv.slice(3)
 
 switch (script) {
   case 'build':
   case 'start':
-  case 'test': {
+  case 'test':
+    // eslint-disable-next-line no-case-declarations
     const result = spawn.sync(
       'node',
       [require.resolve('../scripts/' + script)].concat(args),
       { stdio: 'inherit' },
     )
+
     if (result.signal) {
       if (result.signal === 'SIGKILL') {
         console.log(
@@ -30,11 +33,10 @@ switch (script) {
       }
       process.exit(1)
     }
+
     process.exit(result.status)
-    break
-  }
   default:
     console.log('Unknown script "' + script + '".')
-    console.log('Perhaps you need to update razzle?')
+    console.log('Perhaps you need to update micro?')
     break
 }
