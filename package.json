@@ -1,15 +1,23 @@
 {
-  "name": "@sravni/micro",
-  "version": "1.0.0",
+  "name": "create-frontend",
+  "version": "0.0.1",
   "description": "Create server-rendered universal JavaScript applications with no configuration",
+  "homepage": "https://github.com/mdenisov/micro",
   "bin": {
     "micro": "bin/micro.js"
   },
-  "publishConfig": {
-    "registry": "https://registry.sravni-team.ru/repository/npm-sravni/"
-  },
   "author": "Maxim Denisov <maxim.denisov@sravni.ru>",
   "license": "ISC",
+  "keywords": [
+    "react",
+    "webpack",
+    "ssr",
+    "universal",
+    "isomorphic",
+    "cra",
+    "frontend",
+    "microfrontend"
+  ],
   "dependencies": {
     "@babel/code-frame": "^7.5.5",
     "@babel/core": "^7.7.5",
