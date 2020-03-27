@@ -1,9 +1,12 @@
 {
-  "name": "micro",
+  "name": "@sravni/micro",
   "version": "1.0.0",
   "description": "Create server-rendered universal JavaScript applications with no configuration",
   "bin": {
     "micro": "bin/micro.js"
+  },
+  "publishConfig": {
+    "registry": "https://registry.sravni-team.ru/repository/npm-sravni/"
   },
   "author": "Maxim Denisov <maxim.denisov@sravni.ru>",
   "license": "ISC",

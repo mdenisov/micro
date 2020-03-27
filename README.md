@@ -10,7 +10,7 @@ Universal JavaScript applications are tough to setup. Either you buy into a fram
 
 ## Quick Start
 
-```bash
+```
 yarn start
 ```
 
@@ -59,7 +59,7 @@ If your application is running, and you need to manually restart your server, yo
 
 Frontend comes with most of ES6 stuff you need. However, if you want to add your own babel transformations, just add a `.babelrc` file to the root of your project.
 
-```js
+```
 {
   "presets": [
     "stage-0"
@@ -76,7 +76,7 @@ A word of advice: the `.babelrc` file will replace the internal micro babelrc te
 
 You can also extend the underlying webpack config. Create a file called `micro.config.js` in your project's root.
 
-```js
+```
 // micro.config.js
 
 module.exports = {
@@ -92,7 +92,7 @@ module.exports = {
 
 Frontend supports [CSS Modules](https://github.com/css-modules/css-modules) using Webpack's [css-loader](https://github.com/webpack-contrib/css-loader). Simply import your CSS file with the extension `.module.css` and Frontend will process the file using `css-loader`.
 
-```jsx
+```
 import React from 'react';
 import styles from './style.module.css';
 
