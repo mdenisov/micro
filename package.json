@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Create server-rendered universal JavaScript applications with no configuration",
   "bin": {
-    "frontend": "./bin/frontend.js"
+    "micro": "bin/micro.js"
   },
   "author": "Maxim Denisov <maxim.denisov@sravni.ru>",
   "license": "ISC",
