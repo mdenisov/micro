@@ -6,7 +6,7 @@ Universal JavaScript applications are tough to setup. Either you buy into a fram
 - Comes with your favorite ES6 JavaScript goodies
 - Comes with the same CSS setup as [create-react-app](https://github.com/facebookincubator/create-react-app)
 - Works with [React](https://github.com/facebook/react)
-- Escape hatches for customization via `.babelrc` and `micro.config.js`
+- Escape hatches for customization via `.babelrc` and `frontend.config.js`
 
 ## Quick Start
 
@@ -70,14 +70,14 @@ Frontend comes with most of ES6 stuff you need. However, if you want to add your
 }
 ```
 
-A word of advice: the `.babelrc` file will replace the internal micro babelrc template. You must include at the very minimum the default micro/babel preset.
+A word of advice: the `.babelrc` file will replace the internal frontend babelrc template. You must include at the very minimum the default frontend/babel preset.
 
 ### Extending Webpack
 
-You can also extend the underlying webpack config. Create a file called `micro.config.js` in your project's root.
+You can also extend the underlying webpack config. Create a file called `frontend.config.js` in your project's root.
 
 ```
-// micro.config.js
+// frontend.config.js
 
 module.exports = {
   modify: (config, { target, dev }, webpack) => {
@@ -116,10 +116,10 @@ export default Component;
 - `process.env.HOST`: default is `0.0.0.0`
 - `process.env.NODE_ENV`: `'development'` or `'production'`
 - `process.env.BUILD_TARGET`: either `'client'` or `'server'`
-- `process.env.PUBLIC_PATH`: Only in used in `micro build`. You can alter the `webpack.config.output.publicPath` of the client assets (bundle, css, and images). This is useful if you plan to serve your assets from a CDN. Make sure to _include_ a trailing slash (e.g. `PUBLIC_PATH=https://cdn.example.com/`). If you are using React and altering the public path, make sure to also [include the `crossorigin` attribute](https://reactjs.org/docs/cdn-links.html#why-the-crossorigin-attribute) on your `<script>` tag in `src/server.jsx`.
+- `process.env.PUBLIC_PATH`: Only in used in `frontend build`. You can alter the `webpack.config.output.publicPath` of the client assets (bundle, css, and images). This is useful if you plan to serve your assets from a CDN. Make sure to _include_ a trailing slash (e.g. `PUBLIC_PATH=https://cdn.example.com/`). If you are using React and altering the public path, make sure to also [include the `crossorigin` attribute](https://reactjs.org/docs/cdn-links.html#why-the-crossorigin-attribute) on your `<script>` tag in `src/server.jsx`.
 - `process.env.CLIENT_PUBLIC_PATH`: The `NODE_ENV=development` build's `BUILD_TARGET=client` has a different `PUBLIC_PATH` than `BUILD_TARGET=server`. Default is `http://${process.env.HOST}:${process.env.PORT + 1}/`
 
 You can create your own custom build-time environment variables. They must start
-with `MICRO_`. Any other variables except the ones listed above will be ignored to avoid accidentally exposing a private key on the machine that could have the same name. Changing any environment variables will require you to restart the development server if it is running.
+with `FRONTEND_`. Any other variables except the ones listed above will be ignored to avoid accidentally exposing a private key on the machine that could have the same name. Changing any environment variables will require you to restart the development server if it is running.
 
 These environment variables will be defined for you on `process.env`. For example, having an environment variable named `SECRET_CODE` will be exposed in your JS as `process.env.SECRET_CODE`.
