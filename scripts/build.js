@@ -169,7 +169,6 @@ function compile(config, cb) {
   try {
     compiler = webpack(config)
   } catch (err) {
-    clearConsole()
     console.log(
       chalk.cyan('Failed to compile.'),
       err,
