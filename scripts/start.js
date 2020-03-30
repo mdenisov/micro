@@ -131,7 +131,6 @@ setPorts()
     })
   })
   .catch((err) => {
-    clearConsole()
     console.log(
       chalk.cyan('Failed to compile.'),
       err,
