@@ -607,6 +607,7 @@ module.exports = (
             // Enable file caching
             cache: true,
             sourceMap: false,
+            extractComments: false,
           }),
           new OptimizeCSSAssetsPlugin({
             cssProcessorOptions: {
