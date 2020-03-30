@@ -4,7 +4,7 @@
   "description": "Create server-rendered universal JavaScript applications with no configuration",
   "homepage": "https://github.com/mdenisov/micro",
   "bin": {
-    "micro": "bin/micro.js"
+    "frontend": "bin/frontend.js"
   },
   "author": "Maxim Denisov <maxim.denisov@sravni.ru>",
   "license": "ISC",

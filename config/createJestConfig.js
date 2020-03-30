@@ -84,12 +84,12 @@ module.exports = (resolve, rootDir) => {
     if (unsupportedKeys.length) {
       console.error(
         chalk.red(
-          'Out of the box, micro only supports overriding ' +
+          'Out of the box, frontend only supports overriding ' +
           'these Jest options:\n\n' +
           supportedKeys.map(key => chalk.bold('  \u2022 ' + key)).join('\n') +
           '.\n\n' +
           'These options in your package.json Jest configuration ' +
-          'are not currently supported by micro:\n\n' +
+          'are not currently supported by frontend:\n\n' +
           unsupportedKeys.map(key => chalk.bold('  \u2022 ' + key)).join('\n'),
         ),
       )

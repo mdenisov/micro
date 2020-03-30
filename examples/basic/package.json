@@ -1,11 +1,11 @@
 {
-  "name": "micro-examples-basic",
+  "name": "frontend-examples-basic",
   "version": "0.0.1",
   "license": "MIT",
   "scripts": {
-    "start": "micro start",
-    "build": "micro build",
-    "test": "micro test --env=jsdom",
+    "start": "frontend start",
+    "build": "frontend build",
+    "test": "frontend test --env=jsdom",
     "start:prod": "NODE_ENV=production node build/server.js"
   },
   "dependencies": {
@@ -17,7 +17,7 @@
     "react-router-dom": "^5.1.2"
   },
   "devDependencies": {
-    "@sravni/micro": "^1.0.0",
+    "@sravni/create-frontend": "^0.0.2",
     "@types/koa": "^2.11.0",
     "@types/koa-compress": "^2.0.9",
     "@types/koa-static": "^4.0.1",

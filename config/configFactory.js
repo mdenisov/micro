@@ -103,7 +103,7 @@ module.exports = (
     target: target,
     // Controversially, decide on sourcemaps.
     devtool: IS_DEV ? 'cheap-module-source-map' : 'source-map',
-    // We need to tell webpack how to resolve both micro's node_modules and
+    // We need to tell webpack how to resolve both frontend's node_modules and
     // the users', so we use resolve and resolveLoader.
     stats: false,
     resolve: {
@@ -639,7 +639,7 @@ module.exports = (
     ]
   }
 
-  // Apply plugins, if they are present in micro.config.js
+  // Apply plugins, if they are present in frontend.config.js
   if (Array.isArray(plugins)) {
     plugins.forEach(plugin => {
       config = runPlugin(
@@ -651,7 +651,7 @@ module.exports = (
     })
   }
 
-  // Check if micro.config has a modify function. If it does, call it on the configs we created.
+  // Check if frontend.config has a modify function. If it does, call it on the configs we created.
   if (modify) {
     config = modify(config, { target, dev: IS_DEV }, webpackObject)
   }

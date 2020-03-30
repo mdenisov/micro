@@ -37,6 +37,6 @@ switch (script) {
     process.exit(result.status)
   default:
     console.log('Unknown script "' + script + '".')
-    console.log('Perhaps you need to update micro?')
+    console.log('Perhaps you need to update frontend?')
     break
 }
