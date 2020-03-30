@@ -1,1 +1,4 @@
+.idea/**/*
 examples/**/*
+.eslintrc.js
+README.md
