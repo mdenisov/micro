@@ -1,6 +1,6 @@
 {
   "name": "create-frontend",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Create server-rendered universal JavaScript applications with no configuration",
   "homepage": "https://github.com/mdenisov/micro",
   "bin": {
