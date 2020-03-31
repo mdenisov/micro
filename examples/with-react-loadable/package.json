@@ -1,0 +1,31 @@
+{
+  "name": "frontend-examples-with-react-loadable",
+  "version": "0.0.1",
+  "license": "MIT",
+  "scripts": {
+    "start": "frontend start",
+    "build": "frontend build",
+    "test": "frontend test --env=jsdom",
+    "start:prod": "NODE_ENV=production node build/server.js"
+  },
+  "dependencies": {
+    "koa": "^2.11.0",
+    "koa-compress": "^3.0.0",
+    "koa-static": "^5.0.0",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "react-router-dom": "^5.1.2",
+    "react-loadable": "^5.5.0"
+  },
+  "devDependencies": {
+    "@sravni/create-frontend": "^0.0.10",
+    "@types/koa": "^2.11.0",
+    "@types/koa-compress": "^2.0.9",
+    "@types/koa-static": "^4.0.1",
+    "@types/react": "^16.9.16",
+    "@types/react-dom": "^16.9.4",
+    "@types/react-router-dom": "^5.1.3",
+    "@types/webpack-env": "^1.14.1",
+    "typescript": "^3.7.3"
+  }
+}
