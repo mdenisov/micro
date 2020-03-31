@@ -7,7 +7,7 @@
     "frontend": "bin/frontend.js"
   },
   "author": "Maxim Denisov <maxim.denisov@sravni.ru>",
-  "license": "ISC",
+  "license": "MIT",
   "keywords": [
     "react",
     "webpack",

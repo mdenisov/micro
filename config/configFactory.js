@@ -5,12 +5,11 @@ const TerserPlugin = require('terser-webpack-plugin')
 const nodeExternals = require('webpack-node-externals')
 const AssetsPlugin = require('assets-webpack-plugin')
 const StartServerPlugin = require('start-server-webpack-plugin')
-const MiniCssExtractPlugin = require('../plugins/mini-css-extract-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const safePostCssParser = require('postcss-safe-parser')
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const WebpackBar = require('webpackbar')
 const eslint = require('eslint')
-const postcssNormalize = require('postcss-normalize')
 
 const errorOverlayMiddleware = require('react-dev-utils/errorOverlayMiddleware')
 const evalSourceMapMiddleware = require('react-dev-utils/evalSourceMapMiddleware')
@@ -19,6 +18,7 @@ const typescriptFormatter = require('react-dev-utils/typescriptFormatter')
 
 const runPlugin = require('../utils/runPlugin')
 const paths = require('./paths')
+const postCssOptions = require('./postCss')
 const { getClientEnv, nodePath } = require('./env')
 
 // Check if TypeScript is setup
@@ -27,20 +27,6 @@ const useTypeScript = fs.existsSync(paths.appTsConfig)
 // style files regexes
 const cssRegex = /\.css$/
 const cssModuleRegex = /\.module\.css$/
-
-const postCssOptions = {
-  ident: 'postcss', // https://webpack.js.org/guides/migrating/#complex-options
-  plugins: () => [
-    require('postcss-flexbugs-fixes'),
-    require('postcss-preset-env')({
-      autoprefixer: {
-        flexbox: 'no-2009',
-      },
-      stage: 3,
-    }),
-    postcssNormalize()
-  ],
-}
 
 // This is the Webpack configuration factory. It's the juice!
 module.exports = (
