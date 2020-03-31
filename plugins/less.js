@@ -1,6 +1,6 @@
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
-const postCssOptions = require('./postCss')
+const postCssOptions = require('../config/postCss')
 
 module.exports = (defaultConfig, { target, dev }, webpack, userOptions = {}) => {
   const isServer = target !== 'web'
