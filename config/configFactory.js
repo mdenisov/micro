@@ -39,6 +39,7 @@ module.exports = (
     modify,
     plugins,
     modifyBabelOptions,
+    splitChunksType,
   },
   webpackObject,
 ) => {
@@ -531,7 +532,40 @@ module.exports = (
           name: 'runtime',
         },
 
-        splitChunks: {
+        splitChunks: splitChunksType === 'granular' ? {
+          chunks: 'all',
+          maxInitialRequests: 25,
+          minSize: 20000,
+          cacheGroups: {
+            framework: {
+              chunks: 'all',
+              name: 'framework',
+              // This regex ignores nested copies of framework libraries so they're
+              // bundled with their issuer.
+              test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
+              priority: 30,
+              // Don't let webpack eliminate this chunk (prevents this chunk from
+              // becoming a part of the commons chunk)
+              enforce: true,
+            },
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name(module) {
+                const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1]
+
+                return `npm.${packageName.replace('@', '')}`
+              },
+              priority: 20,
+              minChunks: 1,
+              reuseExistingChunk: true,
+            },
+            commons: {
+              name: 'commons',
+              minChunks: 3,
+              priority: 10,
+            },
+          },
+        } : {
           chunks: 'all',
           cacheGroups: {
             default: false,
@@ -545,7 +579,7 @@ module.exports = (
             react: {
               name: 'commons',
               chunks: 'all',
-              test: /[\\/]node_modules[\\/](react|react-dom|scheduler|react-loadable)[\\/]/,
+              test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
             },
           }
         },
