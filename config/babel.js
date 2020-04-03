@@ -34,8 +34,6 @@ const preset = {
     [require.resolve('@babel/preset-typescript'), presetTypescriptConfig],
   ],
   plugins: [
-    // require.resolve('react-loadable/babel'),
-
     // class { handleThing = () => { } }
     require.resolve('@babel/plugin-proposal-class-properties'),
 
