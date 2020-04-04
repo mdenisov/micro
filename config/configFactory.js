@@ -478,7 +478,10 @@ module.exports = (
       config.plugins = [
         ...config.plugins,
         new webpack.HotModuleReplacementPlugin({
-          multiStep: true,
+          // multiStep: true,
+          multiStep: false,
+          fullBuildTimeout: 300,
+          requestTimeout: 10000
         }),
         new webpack.DefinePlugin(dotenv.stringified),
       ]
