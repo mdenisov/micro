@@ -364,6 +364,15 @@ module.exports = (
       // Pretty format server errors
       config.entry.unshift(require.resolve('../utils/prettyNodeErrors.js'))
 
+      const nodeArgs = ['-r', 'source-map-support/register']
+
+      // Passthrough --inspect and --inspect-brk flags (with optional [host:port] value) to node
+      if (process.env.INSPECT_BRK) {
+        nodeArgs.push(process.env.INSPECT_BRK)
+      } else if (process.env.INSPECT) {
+        nodeArgs.push(process.env.INSPECT)
+      }
+
       config.plugins = [
         ...config.plugins,
         // Add hot module replacement
@@ -371,7 +380,7 @@ module.exports = (
         // Run server
         new StartServerPlugin({
           name: 'server.js',
-          // nodeArgs: ['--inspect=9229'], // allow debugging
+          nodeArgs,
           // args: [''], // pass args to script
           // signal: true, // signal to send for HMR (defaults to `false`, uses 'SIGUSR2' if `true`)
           // keyboard: true, // Allow typing 'rs' to restart the server. default: only if NODE_ENV is 'development'

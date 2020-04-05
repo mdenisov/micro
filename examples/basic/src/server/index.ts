@@ -1,8 +1,8 @@
 import * as http from 'http'
 
-import app from './server'
+import './env'
 
-let currentHandler = app.callback()
+let currentHandler = require('./server').default.callback()
 const server = http.createServer(currentHandler)
 
 server
@@ -20,7 +20,7 @@ if (module.hot) {
     console.log('🔁  HMR Reloading `./server`...')
 
     try {
-      const newHandler = require('./').default.callback()
+      const newHandler = require('./server').default.callback()
 
       server.removeListener('request', currentHandler)
       server.on('request', newHandler)
