@@ -99,7 +99,6 @@ setPorts()
       pingServer(URL)
         .then(() => openBrowser(URL))
         .catch((err) => {
-          clearConsole()
           console.log(
             chalk.cyan('Failed to start server.'),
             err,
