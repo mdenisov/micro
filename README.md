@@ -11,6 +11,8 @@ Universal JavaScript applications are tough to setup. Either you buy into a fram
 ## Quick Start
 
 ```
+npx create-frontend bootstrap my-app
+cd my-app
 yarn start
 ```
 
