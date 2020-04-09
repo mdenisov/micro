@@ -9,6 +9,7 @@ const args = process.argv.slice(3)
 switch (script) {
   case 'build':
   case 'start':
+  case 'create':
   case 'test':
     // eslint-disable-next-line no-case-declarations
     const result = spawn.sync(

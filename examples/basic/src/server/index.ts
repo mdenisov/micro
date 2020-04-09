@@ -1,7 +1,5 @@
 import * as http from 'http'
 
-import './env'
-
 let currentHandler = require('./server').default.callback()
 const server = http.createServer(currentHandler)
 

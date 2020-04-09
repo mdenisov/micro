@@ -18,7 +18,7 @@
     "react-loadable": "^5.5.0"
   },
   "devDependencies": {
-    "@sravni/create-frontend": "^0.0.10",
+    "create-frontend": "^0.0.17",
     "@types/koa": "^2.11.0",
     "@types/koa-compress": "^2.0.9",
     "@types/koa-static": "^4.0.1",
