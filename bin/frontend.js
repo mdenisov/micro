@@ -3,7 +3,7 @@
 
 const spawn = require('react-dev-utils/crossSpawn')
 
-const script = process.argv[2]
+const script = process.argv[2] || 'create'
 const args = process.argv.slice(3)
 
 switch (script) {
