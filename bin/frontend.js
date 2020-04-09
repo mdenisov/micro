@@ -3,8 +3,12 @@
 
 const spawn = require('react-dev-utils/crossSpawn')
 
-const script = process.argv[2] || 'create'
+let script = process.argv[2]
 const args = process.argv.slice(3)
+
+if (script === 'bootstrap') {
+  script = 'create'
+}
 
 switch (script) {
   case 'build':
