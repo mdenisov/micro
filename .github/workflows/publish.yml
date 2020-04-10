@@ -28,6 +28,6 @@ jobs:
       - name: Install
         run: yarn --frozen-lockfile
       - name: Publish
-          run: yarn publish
-          env:
-            NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: yarn publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
