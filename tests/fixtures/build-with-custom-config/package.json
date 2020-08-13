@@ -1,0 +1,7 @@
+{
+  "scripts": {
+    "build": "frontend build"
+  },
+  "name": "build-default",
+  "license": "MIT"
+}
