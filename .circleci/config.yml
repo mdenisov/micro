@@ -43,6 +43,10 @@ jobs:
     <<: *defaults
     docker:
       - image: circleci/node:12
+  test-node13:
+    <<: *defaults
+    docker:
+      - image: circleci/node:13
 
 
 workflows:
@@ -52,3 +56,4 @@ workflows:
       - test-node10
       - test-node11
       - test-node12
+      - test-node13
