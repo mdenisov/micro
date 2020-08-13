@@ -1,6 +1,7 @@
+[![CircleCI](https://circleci.com/gh/mdenisov/micro/tree/master.svg?style=shield)](https://circleci.com/gh/mdenisov/micro/tree/master)
 [![npm version](https://img.shields.io/npm/v/create-frontend)](https://www.npmjs.com/package/create-frontend)
-[![npm version](https://img.shields.io/david/mdenisov/micro)](https://www.npmjs.com/package/create-frontend)
-[![npm version](https://img.shields.io/npm/dw/create-frontend)](https://www.npmjs.com/package/create-frontend)
+[![npm dependencies](https://img.shields.io/david/mdenisov/micro)](https://www.npmjs.com/package/create-frontend)
+[![npm downloads](https://img.shields.io/npm/dw/create-frontend)](https://www.npmjs.com/package/create-frontend)
 
 Universal JavaScript applications are tough to setup. Either you buy into a framework like [Next.js](https://github.com/zeit/next.js) or [react-server](https://github.com/redfin/react-server), fork a boilerplate, or set things up yourself.
 
