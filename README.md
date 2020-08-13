@@ -1,5 +1,6 @@
 [![npm version](https://badge.fury.io/js/create-frontend.svg)](https://badge.fury.io/js/create-frontend)
 [![npm version](https://david-dm.org/mdenisov/micro.svg)](https://www.npmjs.com/package/create-frontend)
+[![Known Vulnerabilities](https://snyk.io/test/npm/create-frontend/badge.svg)](https://snyk.io/test/npm/create-frontend)
 
 Universal JavaScript applications are tough to setup. Either you buy into a framework like [Next.js](https://github.com/zeit/next.js) or [react-server](https://github.com/redfin/react-server), fork a boilerplate, or set things up yourself.
 
