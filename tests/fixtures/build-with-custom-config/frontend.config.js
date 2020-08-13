@@ -4,6 +4,6 @@ module.exports = {
       config.output.filename = 'custom.js'
     }
 
-    return config;
+    return config
   },
 }
