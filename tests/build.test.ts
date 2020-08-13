@@ -39,4 +39,8 @@ describe('build', () => {
 
     expect(output.code).toBe(0)
   })
+
+  afterEach(() => {
+    utils.teardownStage(stageName)
+  })
 })

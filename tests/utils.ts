@@ -14,3 +14,9 @@ export const setupStageWithFixture = (stageName, fixtureName) => {
   shell.chmod(755, path.join(stagePath, 'node_modules', '.bin', 'frontend'))
   shell.cd(stagePath)
 }
+
+export const teardownStage = (stageName) => {
+  shell.cd(rootDir)
+
+  fs.removeSync(path.join(rootDir, stageName))
+}
