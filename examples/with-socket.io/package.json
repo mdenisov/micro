@@ -1,0 +1,32 @@
+{
+  "name": "frontend-examples-with-less",
+  "version": "0.0.1",
+  "license": "MIT",
+  "scripts": {
+    "start": "frontend start",
+    "build": "frontend build",
+    "test": "frontend test --env=jsdom",
+    "start:prod": "NODE_ENV=production node build/server.js"
+  },
+  "dependencies": {
+    "koa": "^2.13.0",
+    "koa-compress": "^3.1.0",
+    "koa-static": "^5.0.0",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-router-dom": "^5.2.0",
+    "socket.io": "^2.3.0"
+  },
+  "devDependencies": {
+    "create-frontend": "^0.0.24",
+    "@types/koa": "^2.11.3",
+    "@types/koa-compress": "^2.0.9",
+    "@types/koa-static": "^4.0.1",
+    "@types/react": "^16.9.46",
+    "@types/react-dom": "^16.9.8",
+    "@types/react-router-dom": "^5.1.5",
+    "@types/webpack-env": "^1.15.2",
+    "socket.io-client": "^2.3.0",
+    "typescript": "^3.7.3"
+  }
+}
