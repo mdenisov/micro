@@ -1,5 +1,6 @@
 const fs = require('fs-extra')
 const path = require('path')
+const crypto = require('crypto')
 const webpack = require('webpack')
 const TerserPlugin = require('terser-webpack-plugin')
 const nodeExternals = require('webpack-node-externals')
@@ -27,6 +28,14 @@ const useTypeScript = fs.existsSync(paths.appTsConfig)
 // style files regexes
 const cssRegex = /\.css$/
 const cssModuleRegex = /\.module\.css$/
+
+const isModuleCSS = (module) => {
+  return (
+    module.type === 'css/mini-extract' ||
+    module.type === 'css/extract-chunks' ||
+    module.type === 'css/extract-css-chunks'
+  )
+}
 
 // This is the Webpack configuration factory. It's the juice!
 module.exports = (
@@ -546,37 +555,78 @@ module.exports = (
 
         splitChunks: splitChunksType === 'granular' ? {
           chunks: 'all',
-          maxInitialRequests: 25,
-          minSize: 20000,
           cacheGroups: {
+            default: false,
+            vendors: false,
+            // In webpack 5 vendors was renamed to defaultVendors
+            defaultVendors: false,
             framework: {
               chunks: 'all',
               name: 'framework',
               // This regex ignores nested copies of framework libraries so they're
               // bundled with their issuer.
+              // https://github.com/vercel/next.js/pull/9012
               test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
-              priority: 30,
+              priority: 40,
               // Don't let webpack eliminate this chunk (prevents this chunk from
               // becoming a part of the commons chunk)
               enforce: true,
             },
-            vendor: {
-              test: /[\\/]node_modules[\\/]/,
-              name(module) {
-                const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1]
-
-                return `npm.${packageName.replace('@', '')}`
+            lib: {
+              test(module) {
+                return (
+                  module.size() > 160000 &&
+                  /node_modules[/\\]/.test(module.identifier())
+                )
               },
-              priority: 20,
+              name(module) {
+                const hash = crypto.createHash('sha1')
+                if (isModuleCSS(module)) {
+                  module.updateHash(hash)
+                } else {
+                  if (!module.libIdent) {
+                    throw new Error(
+                      `Encountered unknown module type: ${module.type}. Please open an issue.`
+                    )
+                  }
+
+                  hash.update(module.libIdent({ context: process.cwd() }))
+                }
+
+                return hash.digest('hex').substring(0, 8)
+              },
+              priority: 30,
               minChunks: 1,
               reuseExistingChunk: true,
             },
             commons: {
               name: 'commons',
               minChunks: 3,
+              priority: 20,
+            },
+            shared: {
+              name(module, chunks) {
+                return (
+                  crypto
+                    .createHash('sha1')
+                    .update(
+                      chunks.reduce(
+                        (acc, chunk) => {
+                          return acc + chunk.name
+                        },
+                        ''
+                      )
+                    )
+                    .digest('hex') + (isModuleCSS(module) ? '_CSS' : '')
+                )
+              },
               priority: 10,
+              minChunks: 2,
+              reuseExistingChunk: true,
             },
           },
+          maxInitialRequests: 25,
+          minSize: 20000
         } : {
           chunks: 'all',
           cacheGroups: {
