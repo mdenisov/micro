@@ -55,7 +55,7 @@
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-react": "^7.21.2",
     "eslint-plugin-standard": "^4.0.1",
-    "execa": "^4.0.3",
+    "execa": "^5.0.0",
     "file-loader": "^6.1.0",
     "fs-extra": "^9.0.1",
     "jest": "^26.4.2",
