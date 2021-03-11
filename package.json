@@ -71,7 +71,7 @@
     "postcss-normalize": "^8.0.1",
     "postcss-preset-env": "^6.7.0",
     "postcss-safe-parser": "^4.0.2",
-    "react-dev-utils": "^10.2.1",
+    "react-dev-utils": "^11.0.4",
     "react-error-overlay": "^6.0.7",
     "sockjs-client": "^1.5.0",
     "start-server-webpack-plugin": "^2.2.5",
